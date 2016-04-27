@@ -2,7 +2,7 @@
 
 namespace Peanut\Phalcon\Mvc;
 
-class Store
+class Router
 {
     private static $instance; //The single instance
 
