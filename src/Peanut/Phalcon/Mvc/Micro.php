@@ -43,7 +43,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         foreach (Router::getInstance()->getRoutes() as $key => $value)
         {
-             parent::{$value['method']}($value['prefix'].$value['pattern'], $value['handler']);
+             parent::{$value['method']}($value['prefix'].$value['pattern'] ?: '/', $value['handler']);
         }
 
         $dependencyInjector = $this->_dependencyInjector;
