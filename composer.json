@@ -1,18 +1,4 @@
 {
     "name" : "yejune/peanut",
-    "description" : "",
-    "require": {
-        "peanut/migration": "dev-master"
-    },
-    "autoload": {
-        "psr-4": {
-            "Peanut\\Migration\\": "vendor/peanut/migration/src/Migration/"
-        }
-    },
-    "repositories": [
-        {
-            "type": "git",
-            "url":  "https://github.com/yejune/peanut-migration.git"
-        }
-    ]
+    "description" : ""
 }
