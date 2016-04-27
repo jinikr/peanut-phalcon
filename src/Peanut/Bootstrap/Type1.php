@@ -2,7 +2,7 @@
 
 namespace Peanut\Boostrap;
 
-class Default
+class Type1
 {
     private $di;
 
