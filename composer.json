@@ -14,7 +14,5 @@
             "type": "git",
             "url":  "https://github.com/yejune/peanut-migration.git"
         }
-    ],
-    "require-dev": {
-    }
+    ]
 }
