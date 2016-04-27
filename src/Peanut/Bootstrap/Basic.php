@@ -1,8 +1,8 @@
 <?php
 
-namespace Peanut\Boostrap;
+namespace Peanut\Bootstrap;
 
-class Type1
+class Basic
 {
     private $di;
 
