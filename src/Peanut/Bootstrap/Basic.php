@@ -23,7 +23,7 @@ class Basic
     {
         // $this->initConfig($config);
         $this->initSession($config);
-        $this->initPeanutDb($config);
+        $this->initDb($config);
 
         $app->setDI($this->di);
         return $app;
@@ -139,11 +139,17 @@ class Basic
         };
     }
 
-    private function initPeanutDb(array $config)
+    private function initDb(array $config)
     {
-        if (true === isset($config['databases']))
+        if (true === isset($config['databases']) && true === is_array($config['databases']))
         {
-            \Peanut\Db\Driver::setConnectInfo($config['databases']);
+            foreach($config['databases'] as $key => $dbconn)
+            {
+                $this->di['db_'.$key] = function() use ($dbconn)
+                {
+                    return $dbconn;
+                };
+            }
         }
     }
 
