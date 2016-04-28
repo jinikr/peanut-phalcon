@@ -7,23 +7,37 @@ class Micro extends \Phalcon\Mvc\Micro
 
     public $prefix;
 
-    private function callHandler($name, $handlers, $args = [])
+    private function callHandler($name, $handler, $args = [])
     {
-        if (true === is_callable($handlers))
+        if (true === is_callable($handler))
         {
-            $status = call_user_func_array($handlers, $args);
+            $status = call_user_func_array($handler, $args);
         }
-        else if (true === is_string($handlers))
+        else if (true === is_string($handler))
         {
-            if (false !== strpos($handlers, '->'))
+            if (false !== strpos($handler, '->'))
             {
-                $tmp = explode('->', $handlers);
-                $class = Router::getInstance()->load($tmp[0]);
-                $status = call_user_func_array([$class, $tmp[1]], $args);
+                $tmp = explode('->', $handler);
+                try
+                {
+                    $class = Router::getInstance()->load($tmp[0]);
+                }
+                catch(\Throwable $e)
+                {
+                    throw new \Exception($name.' \''.$handler.'\' handler is not callable');
+                }
+                if(true === is_callable([$class, $tmp[1]]))
+                {
+                    $status = call_user_func_array([$class, $tmp[1]], $args);
+                }
+                else
+                {
+                    throw new \Exception($name.' \''.$handler.'\' handler is not callable');
+                }
             }
             else
             {
-                throw new \Exception($name.' '.$handlers.' handler is not callable');
+                throw new \Exception($name.' \''.$handler.'\' handler is not callable');
             }
         }
         else

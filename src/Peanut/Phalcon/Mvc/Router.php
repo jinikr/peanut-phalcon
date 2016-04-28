@@ -119,11 +119,18 @@ class Router
 
     public function load($className)
     {
-        if (false === isset($this->class[$className]))
+        try
         {
-            $this->class[$className] = new $className;
+            if (false === isset($this->class[$className]))
+            {
+                $this->class[$className] = new $className;
+            }
+            return $this->class[$className];
         }
-        return $this->class[$className];
+        catch(\Throwable $e)
+        {
+            throw $e;
+        }
     }
 
 }
