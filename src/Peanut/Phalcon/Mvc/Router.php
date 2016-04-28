@@ -28,6 +28,11 @@ class Router
         return \Phalcon\Di::getDefault()->get('request')->getMethod();
     }
 
+    private function getRewriteUri()
+    {
+        return \Phalcon\Di::getDefault()->get('request')->getRewriteUri();
+    }
+
     public function init()
     {
         $this->segments = $this->getSegments();
@@ -76,6 +81,26 @@ class Router
     public function getRoutes()
     {
         return $this->routes;
+    }
+
+    public function setPattern($method, $prefix, $routePattern, $handler)
+    {
+        $prefix = trim($prefix,'/');
+        $routePattern = trim($routePattern,'/');
+
+        $pattern = ($prefix ? '/'.$prefix : '').($routePattern ? '/'.$routePattern : '') ?: '/';
+        $matchPattern = false;
+
+        if(false !== strpos($pattern, '{'))
+        {
+            $re = (new \Phalcon\Mvc\Router\Route($pattern, $this->getRewriteUri()))->getCompiledPattern();
+            $matchPattern = 1 === preg_match($re, $this->getRewriteUri(), $match) ? true : false;
+        }
+
+        if (true === in_array($pattern, $this->segmentParts) || true === $matchPattern)
+        {
+            $this->{$method}[$pattern][] = $handler;
+        }
     }
 
     public function set($method, $prefix, $handler)

@@ -180,19 +180,43 @@ class Micro extends \Phalcon\Mvc\Micro
 
     public function param($key, $methodName)
     {
-        Router::getInstance()->set('param', $this->prefix, [$key, $methodName]);
+        if(func_num_args() > 2)
+        {
+            list($routePattern, $key, $methodName) = func_get_args();
+            Router::getInstance()->setPattern('param', $this->prefix, $routePattern, [$key, $methodName]);
+        }
+        else
+        {
+            Router::getInstance()->set('param', $this->prefix, [$key, $methodName]);
+        }
         return $this;
     }
 
     public function before($methodName)
     {
-        Router::getInstance()->set('before', $this->prefix, $methodName);
+        if(func_num_args() > 1)
+        {
+            list($routePattern, $methodName) = func_get_args();
+            Router::getInstance()->setPattern('before', $this->prefix, $routePattern, $methodName);
+        }
+        else
+        {
+            Router::getInstance()->set('before', $this->prefix, $methodName);
+        }
         return $this;
     }
 
     public function after($methodName)
     {
-        Router::getInstance()->set('after', $this->prefix, $methodName);
+        if(func_num_args() > 1)
+        {
+            list($routePattern, $methodName) = func_get_args();
+            Router::getInstance()->setPattern('after', $this->prefix, $routePattern, $methodName);
+        }
+        else
+        {
+            Router::getInstance()->set('after', $this->prefix, $methodName);
+        }
         return $this;
     }
 
