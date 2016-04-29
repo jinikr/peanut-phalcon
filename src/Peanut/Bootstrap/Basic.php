@@ -151,13 +151,13 @@ class Basic
                 throw new \Exception('databases config를 확인하세요.');
             }
         };
-        if(true === isset($config['database']['profiler']))
+        if(true === isset($config['database']['profile']))
         {
             $this->dbProfiler($config);
         }
     }
 
-    private function initEventManager()
+    private function initEventsManager()
     {
         $this->di['eventsManager'] = function ()
         {
@@ -183,7 +183,7 @@ class Basic
         $eventsManager = $this->di['eventsManager'];
         $eventsManager->attach('db', function ($event, $connection)
         {
-            $profiler = $this->di->get('profiler');
+            $profiler = $this->di['profiler'];
             if ($event->getType() == 'beforeQuery') {
                 $profiler->startProfile($connection->getSQLStatement(), $connection->getSQLVariables(), $connection->getSQLBindTypes());
             }
@@ -191,7 +191,6 @@ class Basic
                 $profiler->stopProfile();
             }
         });
-
         if(true === isset($config['databases']))
         {
             foreach($config['databases'] as $name => $config)
