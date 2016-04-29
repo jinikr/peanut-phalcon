@@ -65,7 +65,7 @@ class Basic
                     }
                     if (false === isset($globalConfig['environment']) || !$globalConfig['environment'])
                     {
-                        throw new \Exception('Configuration file '.$configFile.' '.$this->getHttpHost().'에 해당하는 domains 설정이 있는지 확인하세요.');
+                        throw new \Exception($configFile.' '.$this->getHttpHost().' domains config error');
                     }
                     $envConfigFile = dirname($configFile).'/environment/'.$globalConfig['environment'].'.php';
                     if(true === is_file($envConfigFile))
@@ -77,26 +77,26 @@ class Basic
                         }
                         else
                         {
-                            throw new \Exception('Configuration file '.$envConfig.' array 형식으로 설정하세요..');
+                            throw new \Exception($envConfigFile.' config error');
                         }
                     }
                     else
                     {
-                        throw new \Exception('Configuration file '.$envConfig.' can\'t be loaded');
+                        throw new \Exception($envConfigFile.' can\'t be loaded');
                     }
                 }
                 else
                 {
-                    throw new \Exception('Configuration file '.$configFile.' domains 설정이 잘못 되었습니다.');
+                    throw new \Exception($configFile.' domains config error');
                 }
             }
             else
             {
-                throw new \Exception('Configuration file '.$configFile.' can\'t be loaded.');
+                throw new \Exception($configFile.' can\'t be loaded.');
             }
             if (false === isset($config) || !$config || false === is_array($config))
             {
-                throw new \Exception($configFile.'을 확인하세요.');
+                throw new \Exception('config error');
             }
         }
         catch(\Exception $e)
@@ -140,17 +140,18 @@ class Basic
     }
 
     private function initDb(array $config)
-    {
-        if (true === isset($config['databases']) && true === is_array($config['databases']))
+{
+        $this->di['databases'] = function() use ($config)
         {
-            foreach($config['databases'] as $key => $dbconn)
+            if (true === isset($config['databases']) && true === is_array($config['databases']))
             {
-                $this->di['db_'.$key] = function() use ($dbconn)
-                {
-                    return $dbconn;
-                };
+                return $config['databases'];
             }
-        }
+            else
+            {
+                throw new \Exception('databases config를 확인하세요.');
+            }
+        };
     }
 
     private function initRoute(\Phalcon\Mvc\Micro $app)

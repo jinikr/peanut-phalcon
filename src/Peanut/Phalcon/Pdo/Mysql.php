@@ -11,8 +11,23 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     {
         if (false === isset(self::$instance[$name]))
         {
-            $tmp = \Phalcon\Di::getDefault();
-            self::$instance[$name] = new self (\Phalcon\Di::getDefault()['db_'.$name]);
+            $di = \Phalcon\Di::getDefault();
+            try
+            {
+                self::$instance[$name] = new self ($di['databases'][$name]);
+            }
+            catch(\Phalcon\Di\Exception $e)
+            {
+                throw $e;
+            }
+            catch(\PDOException $e)
+            {
+                throw $e;
+            }
+            catch (\Throwable $e)
+            {
+                throw new \Exception($e->getMessage());
+            }
         }
         return self::$instance[$name];
     }
@@ -93,7 +108,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         catch (\Throwable $e)
         {
             parent::rollback();
-            throw $e;
+            throw new \Exception($e->getMessage());
         }
     }
 
