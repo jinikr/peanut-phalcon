@@ -159,7 +159,7 @@ class Basic
 
     private function initEventManager()
     {
-        $this->di['eventManager'] = function ()
+        $this->di['eventsManager'] = function ()
         {
             return new \Phalcon\Events\Manager;
         };
@@ -180,20 +180,17 @@ class Basic
             return;
         }
         $this->initDbProfiler();
-        $this->initEventManager();
-
-        $eventsManager = $this->di->get('eventManager');
-        $eventsManager->attach('db',
-            function ($event, $connection)
-            {
-                $profiler = $this->di->get('profiler');
-                if ($event->getType() == 'beforeQuery') {
-                    $profiler->startProfile($connection->getSQLStatement(), $connection->getSQLVariables(), $connection->getSQLBindTypes());
-                }
-                if ($event->getType() == 'afterQuery') {
-                    $profiler->stopProfile();
-                }
-            });
+        $eventsManager = $this->di['eventsManager'];
+        $eventsManager->attach('db', function ($event, $connection)
+        {
+            $profiler = $this->di->get('profiler');
+            if ($event->getType() == 'beforeQuery') {
+                $profiler->startProfile($connection->getSQLStatement(), $connection->getSQLVariables(), $connection->getSQLBindTypes());
+            }
+            if ($event->getType() == 'afterQuery') {
+                $profiler->stopProfile();
+            }
+        });
 
         if(true === isset($config['databases']))
         {
