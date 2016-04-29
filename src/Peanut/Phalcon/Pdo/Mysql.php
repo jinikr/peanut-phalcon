@@ -11,10 +11,10 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     {
         if (false === isset(self::$instance[$name]))
         {
-            $di = \Phalcon\Di::getDefault();
             try
             {
-                self::$instance[$name] = new self ($di['databases'][$name]);
+                $di = \Phalcon\Di::getDefault();
+                self::$instance[$name] = new Self ($di['databases'][$name]);
             }
             catch(\Phalcon\Di\Exception $e)
             {

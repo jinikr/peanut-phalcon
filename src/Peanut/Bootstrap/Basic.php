@@ -24,7 +24,6 @@ class Basic
         // $this->initConfig($config);
         $this->initSession($config);
         $this->initDb($config);
-
         $app->setDI($this->di);
         return $app;
     }
@@ -140,7 +139,7 @@ class Basic
     }
 
     private function initDb(array $config)
-{
+    {
         $this->di['databases'] = function() use ($config)
         {
             if (true === isset($config['databases']) && true === is_array($config['databases']))
@@ -152,6 +151,57 @@ class Basic
                 throw new \Exception('databases config를 확인하세요.');
             }
         };
+        if(true === isset($config['database']['profiler']))
+        {
+            $this->dbProfiler($config);
+        }
+    }
+
+    private function initEventManager()
+    {
+        $this->di['eventManager'] = function ()
+        {
+            return new \Phalcon\Events\Manager;
+        };
+    }
+
+    private function initDbProfiler()
+    {
+        $this->di['profiler'] = function ()
+        {
+            return new \Phalcon\Db\Profiler;
+        };
+    }
+
+    private function dbProfiler(array $config)
+    {
+        if($config['environment'] !== 'localhost')
+        {
+            return;
+        }
+        $this->initDbProfiler();
+        $this->initEventManager();
+
+        $eventsManager = $this->di->get('eventManager');
+        $eventsManager->attach('db',
+            function ($event, $connection)
+            {
+                $profiler = $this->di->get('profiler');
+                if ($event->getType() == 'beforeQuery') {
+                    $profiler->startProfile($connection->getSQLStatement(), $connection->getSQLVariables(), $connection->getSQLBindTypes());
+                }
+                if ($event->getType() == 'afterQuery') {
+                    $profiler->stopProfile();
+                }
+            });
+
+        if(true === isset($config['databases']))
+        {
+            foreach($config['databases'] as $name => $config)
+            {
+                \Peanut\Phalcon\Pdo\Mysql::name($name)->setEventsManager($eventsManager);
+            }
+        }
     }
 
     private function initRoute(\Phalcon\Mvc\Micro $app)
