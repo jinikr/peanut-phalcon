@@ -57,7 +57,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         foreach (Router::getInstance()->getRoutes() as $key => $value)
         {
-             parent::{$value['method']}($value['prefix'].$value['pattern'] ?: '/', $value['handler']);
+            parent::{$value['method']}($value['pattern'] ?: '/', $value['handler']);
         }
 
         $dependencyInjector = $this->_dependencyInjector;
@@ -181,105 +181,173 @@ class Micro extends \Phalcon\Mvc\Micro
         return $returnedValue;
     }
 
+    public $routeGroups = [];
+
     public function group($prefix, \Closure $callback)
     {
-        $scope = clone $this;
-        $scope->prefix .= '/'.trim($prefix, '/');
-
-        $callback = $callback->bindTo($scope);
-        $tmp = $callback();
+        array_push($this->routeGroups, $prefix);
+        $callback = $callback->bindTo($this);
+        $callback();
+        array_pop($this->routeGroups);
 
         return $this;
     }
 
-    public function param($key, $methodName)
+
+    const methods = ['POST', 'GET', 'PUT', 'PATCH', 'HEAD', 'DELETE', 'OPTIONS'];
+    private $methods = self::methods;
+
+    private $pattern;
+
+    public function chainInit()
     {
-        if(func_num_args() > 2)
+        $this->methods = self::methods;
+        $this->pattern = '';
+        return $this;
+    }
+
+    public function pattern($pattern)
+    {
+        $this->pattern = trim($pattern, '/');
+        return $this;
+    }
+
+    public function getPattern($pattern)
+    {
+        $pattern = trim($pattern, '/');
+        return ($this->pattern.($this->pattern && $pattern?'/':'').$pattern) ?: '/';
+    }
+
+    public function getRouteGroup($pattern = '')
+    {
+        $pattern = trim($pattern, '/');
+        $pattern = ($this->pattern.($this->pattern && $pattern?'/':'').$pattern) ?: '/';
+        $prefix = trim(implode(',', $this->routeGroups),'/');
+        return ($prefix.($prefix && $pattern?'/':'').$pattern) ?: '/';
+    }
+
+    public function methods($methods = [])
+    {
+        if(false === is_array($methods))
         {
-            list($routePattern, $key, $methodName) = func_get_args();
-            Router::getInstance()->setPattern('param', $this->prefix, $routePattern, [$key, $methodName]);
+            $methods = func_get_args();
         }
-        else
+        if(!$methods)
         {
-            Router::getInstance()->set('param', $this->prefix, [$key, $methodName]);
+            $methods = self::methods;
         }
+        $this->methods = $methods;
         return $this;
     }
 
-    public function before($methodName)
+    public function param($key, $handler, $pattern = '')
     {
-        if(func_num_args() > 1)
-        {
-            list($routePattern, $methodName) = func_get_args();
-            Router::getInstance()->setPattern('before', $this->prefix, $routePattern, $methodName);
-        }
-        else
-        {
-            Router::getInstance()->set('before', $this->prefix, $methodName);
-        }
-        return $this;
+        if(func_num_args() === 3) list($pattern, $key, $handler) = func_get_args();
+        Router::getInstance()->setPattern($this->getRouteGroup($pattern), [$key, $handler], $this->methods);
+        $this->chainInit();
     }
 
-    public function after($methodName)
+    public function before($handler, $pattern = '')
     {
-        if(func_num_args() > 1)
-        {
-            list($routePattern, $methodName) = func_get_args();
-            Router::getInstance()->setPattern('after', $this->prefix, $routePattern, $methodName);
-        }
-        else
-        {
-            Router::getInstance()->set('after', $this->prefix, $methodName);
-        }
-        return $this;
+        if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
+        Router::getInstance()->setPattern($this->getRouteGroup($pattern), $handler, $this->methods);
+        $this->chainInit();
     }
 
-    public function map($routePattern, $handler)
+    public function after($handler, $pattern = '')
     {
-        Router::getInstance()->setRoute('map', $this->prefix, $routePattern, $handler);
-        return $this;
+        if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
+        Router::getInstance()->setPattern($this->getRouteGroup($pattern), $handler, $this->methods);
+        $this->chainInit();
     }
 
-    public function get($routePattern, $handler)
+    public function any($handler, $pattern = '')
     {
-        Router::getInstance()->setRoute('get', $this->prefix, $routePattern, $handler);
-        return $this;
+        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, $this->methods);
+        $this->chainInit();
     }
 
-    public function post($routePattern, $handler)
+    public function map($handler, $pattern = '')
     {
-        Router::getInstance()->setRoute('post', $this->prefix, $routePattern, $handler);
-        return $this;
+        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
+        if(self::methods !== $this->methods) throw new ChainingException();
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['map']);
+        $this->chainInit();
     }
 
-    public function put($routePattern, $handler)
+    public function get($handler, $pattern = '')
     {
-        Router::getInstance()->setRoute('put', $this->prefix, $routePattern, $handler);
-        return $this;
+        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
+        if(self::methods !== $this->methods) throw new ChainingException();
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['get']);
+        $this->chainInit();
     }
 
-    public function patch($routePattern, $handler)
+    public function post($handler, $pattern = '')
     {
-        Router::getInstance()->setRoute('patch', $this->prefix, $routePattern, $handler);
-        return $this;
+        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
+        if(self::methods !== $this->methods) throw new ChainingException();
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['post']);
+        $this->chainInit();
     }
 
-    public function head($routePattern, $handler)
+    public function put($handler, $pattern = '')
     {
-        Router::getInstance()->setRoute('head', $this->prefix, $routePattern, $handler);
-        return $this;
+        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
+        if(self::methods !== $this->methods) throw new ChainingException();
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['put']);
+        $this->chainInit();
     }
 
-    public function delete($routePattern, $handler)
+    public function patch($handler, $pattern = '')
     {
-        Router::getInstance()->setRoute('delete', $this->prefix, $routePattern, $handler);
-        return $this;
+        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
+        if(self::methods !== $this->methods) throw new ChainingException();
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['patch']);
+        $this->chainInit();
     }
 
-    public function options($routePattern, $handler)
+    public function head($handler, $pattern = '')
     {
-        Router::getInstance()->setRoute('options', $this->prefix, $routePattern, $handler);
-        return $this;
+        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
+        if(self::methods !== $this->methods) throw new ChainingException();
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['head']);
+        $this->chainInit();
+    }
+
+    public function delete($handler, $pattern = '')
+    {
+        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
+        if(self::methods !== $this->methods) throw new ChainingException();
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, 'delete');
+        $this->chainInit();
+    }
+
+    public function options($handler, $pattern = '')
+    {
+        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
+        if(self::methods !== $this->methods) throw new ChainingException();
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, 'options');
+        $this->chainInit();
     }
 
 }
+
+class ChainingException extends \Exception
+{
+
+    public function __construct($message = '', $code = 0, \Exception $previous = null)
+    {
+
+        $last = (debug_backtrace()[1]);
+        if($last['class'] === 'Peanut\Phalcon\Mvc\Micro'
+            && true === in_array(strtoupper($last['function']), \Peanut\Phalcon\Mvc\Micro::methods))
+        {
+            $message .= $last['function'].'()은 methods()와 chaining될수 없습니다.'.PHP_EOL.'in '.$last['file'].', line '.$last['line'];
+        }
+        parent::__construct($message);
+    }
+
+}
+

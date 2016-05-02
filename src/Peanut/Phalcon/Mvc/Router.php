@@ -58,22 +58,43 @@ class Router
         return static::$instance;
     }
 
-    public function setRoute($method, $prefix, $routePattern, $handler)
+    public function setRoute($pattern, $handler, $methods = [])
     {
-        $prefix = trim($prefix,'/');
-        $routePattern = trim($routePattern,'/');
-
-        if ('map' === $method || $method === static::$instance->method)
+        if (['map'] === $methods || true === in_array(static::$instance->method, $methods))
         {
-            if (true === empty($prefix)
-                || (false === empty($this->prefix) && 0 === strpos($prefix, $this->prefix)))
+            if (true === empty($pattern)
+                || (false === empty($this->prefix) && 0 === strpos($pattern, $this->prefix)))
             {
-                $this->routes[] = [
-                    'method' => $method,
-                    'prefix' => ($prefix ? '/'.$prefix : ''),
-                    'pattern' => ($routePattern ? '/'.$routePattern : ''),
-                    'handler' => $handler
-                ];
+                foreach($methods as $method)
+                {
+                    $this->routes[] = [
+                        'method' => $method,
+                        'pattern' => ($pattern ? '/'.$pattern : ''),
+                        'handler' => $handler
+                    ];
+                }
+            }
+        }
+    }
+
+    public function setPattern($pattern, $handler, $methods = [])
+    {
+        if (['map'] === $methods || true === in_array(static::$instance->method, $methods))
+        {
+            $matchPattern = false;
+
+            if(false !== strpos($pattern, '{'))
+            {
+                $re = (new \Phalcon\Mvc\Router\Route($pattern, $this->getRewriteUri()))->getCompiledPattern();
+                $matchPattern = 1 === preg_match($re, $this->getRewriteUri(), $match) ? true : false;
+            }
+
+            if (true === in_array($pattern, $this->segmentParts) || true === $matchPattern)
+            {
+                foreach($methods as $method)
+                {
+                    $this->{$method}[$pattern][] = $handler;
+                }
             }
         }
     }
@@ -81,35 +102,6 @@ class Router
     public function getRoutes()
     {
         return $this->routes;
-    }
-
-    public function setPattern($method, $prefix, $routePattern, $handler)
-    {
-        $prefix = trim($prefix,'/');
-        $routePattern = trim($routePattern,'/');
-
-        $pattern = ($prefix ? '/'.$prefix : '').($routePattern ? '/'.$routePattern : '') ?: '/';
-        $matchPattern = false;
-
-        if(false !== strpos($pattern, '{'))
-        {
-            $re = (new \Phalcon\Mvc\Router\Route($pattern, $this->getRewriteUri()))->getCompiledPattern();
-            $matchPattern = 1 === preg_match($re, $this->getRewriteUri(), $match) ? true : false;
-        }
-
-        if (true === in_array($pattern, $this->segmentParts) || true === $matchPattern)
-        {
-            $this->{$method}[$pattern][] = $handler;
-        }
-    }
-
-    public function set($method, $prefix, $handler)
-    {
-        $prefix = trim($prefix,'/');
-        if (true === in_array('/'.$prefix, $this->segmentParts))
-        {
-            $this->{$method}[($prefix ? '/'.$prefix : '')][] = $handler;
-        }
     }
 
     public function get($method)
