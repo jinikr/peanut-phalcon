@@ -57,7 +57,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         foreach (Router::getInstance()->getRoutes() as $key => $value)
         {
-            parent::{$value['method']}($value['pattern'] ?: '/', $value['handler']);
+            parent::{$value['method']}($value['pattern'], $value['handler']);
         }
 
         $dependencyInjector = $this->_dependencyInjector;
@@ -212,18 +212,40 @@ class Micro extends \Phalcon\Mvc\Micro
         return $this;
     }
 
-    public function getPattern($pattern)
-    {
-        $pattern = trim($pattern, '/');
-        return ($this->pattern.($this->pattern && $pattern?'/':'').$pattern) ?: '/';
-    }
-
     public function getRouteGroup($pattern = '')
     {
-        $pattern = trim($pattern, '/');
-        $pattern = ($this->pattern.($this->pattern && $pattern?'/':'').$pattern) ?: '/';
-        $prefix = trim(implode(',', $this->routeGroups),'/');
-        return ($prefix.($prefix && $pattern?'/':'').$pattern) ?: '/';
+
+        $first = trim(implode(',', $this->routeGroups),'/') ?: '';
+        $middle = $this->pattern ?: '';
+        $last = trim($pattern, '/') ?: '';
+
+        $uri = $first;
+        if($middle)
+        {
+            if($uri)
+            {
+                $uri .= '/'.$middle;
+            }
+            else
+            {
+                $uri = $middle;
+            }
+        }
+
+        if($last)
+        {
+            if($uri)
+            {
+                $uri .= '/'.$last;
+            }
+            else
+            {
+                $uri = $last;
+            }
+        }
+
+        return $uri ? '/'.$uri : '/';
+
     }
 
     public function methods($methods = [])

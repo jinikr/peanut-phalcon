@@ -37,7 +37,7 @@ class Router
     {
         $this->segments = $this->getSegments();
         array_unshift($this->segments, '');
-        $this->prefix = true === isset($this->segments[1]) ? $this->segments[1] : '';
+        $this->prefix = '/'.(true === isset($this->segments[1]) ? $this->segments[1] : '');
         $this->method = strtolower($this->getMethod());
         $this->segmentParts = [];
         $tmp = '';
@@ -62,14 +62,14 @@ class Router
     {
         if (['map'] === $methods || true === in_array(static::$instance->method, $methods))
         {
-            if (true === empty($pattern)
-                || (false === empty($this->prefix) && 0 === strpos($pattern, $this->prefix)))
+            if ('/' === $pattern
+                || ('/' !== ($this->prefix) && 0 === strpos($pattern, $this->prefix)))
             {
                 foreach($methods as $method)
                 {
                     $this->routes[] = [
                         'method' => $method,
-                        'pattern' => ($pattern ? '/'.$pattern : ''),
+                        'pattern' => $pattern,
                         'handler' => $handler
                     ];
                 }
@@ -87,6 +87,7 @@ class Router
             {
                 $re = (new \Phalcon\Mvc\Router\Route($pattern, $this->getRewriteUri()))->getCompiledPattern();
                 $matchPattern = 1 === preg_match($re, $this->getRewriteUri(), $match) ? true : false;
+                //pr($re,$this->getRewriteUri(),$match, $matchPattern);
             }
 
             if (true === in_array($pattern, $this->segmentParts) || true === $matchPattern)
