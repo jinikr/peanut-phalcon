@@ -38,7 +38,7 @@ class Router
         $this->segments = $this->getSegments();
         array_unshift($this->segments, '');
         $this->prefix = '/'.(true === isset($this->segments[1]) ? $this->segments[1] : '');
-        $this->method = strtolower($this->getMethod());
+        $this->method = strtoupper($this->getMethod());
         $this->segmentParts = [];
         $tmp = '';
         foreach ($this->segments as $key => $value)
@@ -60,9 +60,20 @@ class Router
 
     public function setRoute($pattern, $handler, $methods = [])
     {
-        if (['map'] === $methods || true === in_array(static::$instance->method, $methods))
+        //pr($type, $pattern, $methods,static::$instance->method);
+
+        if (['MAP'] === $methods || true === in_array(static::$instance->method, $methods))
         {
-            if ('/' === $pattern
+            $matchPattern = false;
+
+            if(false !== strpos($pattern, '{'))
+            {
+                $re = (new \Phalcon\Mvc\Router\Route($pattern, $this->getRewriteUri()))->getCompiledPattern();
+                $matchPattern = 1 === preg_match($re, $this->getRewriteUri(), $match) ? true : false;
+            }
+
+            if (true === $matchPattern
+                || '/' === $pattern
                 || ('/' !== ($this->prefix) && 0 === strpos($pattern, $this->prefix)))
             {
                 foreach($methods as $method)
@@ -77,25 +88,20 @@ class Router
         }
     }
 
-    public function setPattern($pattern, $handler, $methods = [])
+    public function setPattern($type, $pattern, $handler, $methods = [])
     {
-        if (['map'] === $methods || true === in_array(static::$instance->method, $methods))
+        if (['MAP'] === $methods || true === in_array(static::$instance->method, $methods))
         {
             $matchPattern = false;
-
             if(false !== strpos($pattern, '{'))
             {
                 $re = (new \Phalcon\Mvc\Router\Route($pattern, $this->getRewriteUri()))->getCompiledPattern();
                 $matchPattern = 1 === preg_match($re, $this->getRewriteUri(), $match) ? true : false;
-                //pr($re,$this->getRewriteUri(),$match, $matchPattern);
             }
 
-            if (true === in_array($pattern, $this->segmentParts) || true === $matchPattern)
+            if (true === $matchPattern || true === in_array($pattern, $this->segmentParts))
             {
-                foreach($methods as $method)
-                {
-                    $this->{$method}[$pattern][] = $handler;
-                }
+                $this->{$type}[$pattern][] = $handler;
             }
         }
     }

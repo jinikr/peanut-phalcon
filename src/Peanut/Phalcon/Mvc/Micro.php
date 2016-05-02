@@ -5,7 +5,10 @@ namespace Peanut\Phalcon\Mvc;
 class Micro extends \Phalcon\Mvc\Micro
 {
 
-    public $prefix;
+    const methods = ['POST', 'GET', 'PUT', 'PATCH', 'HEAD', 'DELETE', 'OPTIONS'];
+    private $methods = self::methods;
+    private $pattern;
+    private $routeGroups = [];
 
     private function callHandler($name, $handler, $args = [])
     {
@@ -72,7 +75,6 @@ class Micro extends \Phalcon\Mvc\Micro
             $router = $dependencyInjector->getShared("router");
             $router->handle($uri);
             $matchedRoute = $router->getMatchedRoute();
-            $params = $router->getParams();
 
             if (true === is_object($matchedRoute))
             {
@@ -82,6 +84,11 @@ class Micro extends \Phalcon\Mvc\Micro
                     throw new \Exception("Matched route doesn't have an associated handler");
                 }
                 $this->_activeHandler = $handler;
+                $params = [];
+                foreach($matchedRoute->getPaths() as $key)
+                {
+                    $params[] = $router->getMatches()[$key];
+                }
 
                 $routeParamHandlers = Router::getInstance()->get('param');
                 if (true === is_array($routeParamHandlers))
@@ -93,10 +100,9 @@ class Micro extends \Phalcon\Mvc\Micro
                             foreach ($paramHandlers as $paramHandler)
                             {
                                 if (true === isset($paramHandler[0])
-                                    && true === isset($paramHandler[1])
-                                    && true === isset($params[$paramHandler[0]]))
+                                    && true === isset($paramHandler[1]))
                                 {
-                                    $status = $this->callHandler('param', $paramHandler[1], [$params[$paramHandler[0]]]);
+                                    $status = $this->callHandler('param', $paramHandler[1], $params);
                                     if (false === $status)
                                     {
                                         return false;
@@ -116,7 +122,7 @@ class Micro extends \Phalcon\Mvc\Micro
                         {
                             foreach ($beforeHandlers as $beforeHandler)
                             {
-                                $status = $this->callHandler('before', $beforeHandler);
+                                $status = $this->callHandler('before', $beforeHandler, $params);
                                 if (false === $status)
                                 {
                                     return false;
@@ -137,7 +143,7 @@ class Micro extends \Phalcon\Mvc\Micro
                         {
                             foreach ($afterHandlers as $afterHandler)
                             {
-                                $status = $this->callHandler('after', $afterHandler);
+                                $status = $this->callHandler('after', $afterHandler, $params);
                                 if (false === $status)
                                 {
                                     return false;
@@ -181,8 +187,6 @@ class Micro extends \Phalcon\Mvc\Micro
         return $returnedValue;
     }
 
-    public $routeGroups = [];
-
     public function group($prefix, \Closure $callback)
     {
         array_push($this->routeGroups, $prefix);
@@ -192,12 +196,6 @@ class Micro extends \Phalcon\Mvc\Micro
 
         return $this;
     }
-
-
-    const methods = ['POST', 'GET', 'PUT', 'PATCH', 'HEAD', 'DELETE', 'OPTIONS'];
-    private $methods = self::methods;
-
-    private $pattern;
 
     public function chainInit()
     {
@@ -258,28 +256,28 @@ class Micro extends \Phalcon\Mvc\Micro
         {
             $methods = self::methods;
         }
-        $this->methods = $methods;
+        $this->methods = array_map('strtoupper', $methods);
         return $this;
     }
 
     public function param($key, $handler, $pattern = '')
     {
         if(func_num_args() === 3) list($pattern, $key, $handler) = func_get_args();
-        Router::getInstance()->setPattern($this->getRouteGroup($pattern), [$key, $handler], $this->methods);
+        Router::getInstance()->setPattern('param', $this->getRouteGroup($pattern), [$key, $handler], $this->methods);
         $this->chainInit();
     }
 
     public function before($handler, $pattern = '')
     {
         if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
-        Router::getInstance()->setPattern($this->getRouteGroup($pattern), $handler, $this->methods);
+        Router::getInstance()->setPattern('before', $this->getRouteGroup($pattern), $handler, $this->methods);
         $this->chainInit();
     }
 
     public function after($handler, $pattern = '')
     {
         if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
-        Router::getInstance()->setPattern($this->getRouteGroup($pattern), $handler, $this->methods);
+        Router::getInstance()->setPattern('after', $this->getRouteGroup($pattern), $handler, $this->methods);
         $this->chainInit();
     }
 
@@ -294,7 +292,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
         if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['map']);
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['MAP']);
         $this->chainInit();
     }
 
@@ -302,7 +300,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
         if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['get']);
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['GET']);
         $this->chainInit();
     }
 
@@ -310,7 +308,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
         if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['post']);
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['POST']);
         $this->chainInit();
     }
 
@@ -318,7 +316,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
         if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['put']);
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['PUT']);
         $this->chainInit();
     }
 
@@ -326,7 +324,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
         if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['patch']);
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['PATCH']);
         $this->chainInit();
     }
 
@@ -334,7 +332,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
         if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['head']);
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['HEAD']);
         $this->chainInit();
     }
 
@@ -342,7 +340,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
         if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, 'delete');
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, 'DELETE');
         $this->chainInit();
     }
 
@@ -350,7 +348,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
         if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, 'options');
+        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, 'OPTIONS');
         $this->chainInit();
     }
 
