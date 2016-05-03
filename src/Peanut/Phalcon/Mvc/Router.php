@@ -95,8 +95,8 @@ class Router
             $matchPattern = false;
             if(false !== strpos($pattern, '{'))
             {
-                $re = (new \Phalcon\Mvc\Router\Route($pattern, $this->getRewriteUri()))->getCompiledPattern();
-                $matchPattern = 1 === preg_match($re, $this->getRewriteUri(), $match) ? true : false;
+                $re = str_replace('$#u','/#u',(new \Phalcon\Mvc\Router\Route($pattern, $this->getRewriteUri()))->getCompiledPattern());
+                $matchPattern = 1 === preg_match($re, $this->getRewriteUri().'/', $match) ? true : false;
             }
 
             if (true === $matchPattern || true === in_array($pattern, $this->segmentParts))

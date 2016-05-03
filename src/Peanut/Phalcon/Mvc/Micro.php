@@ -85,9 +85,9 @@ class Micro extends \Phalcon\Mvc\Micro
                 }
                 $this->_activeHandler = $handler;
                 $params = [];
-                foreach($matchedRoute->getPaths() as $key)
+                foreach($matchedRoute->getPaths() as $name => $key)
                 {
-                    $params[] = $router->getMatches()[$key];
+                    $params[$name] = $router->getMatches()[$key];
                 }
 
                 $routeParamHandlers = Router::getInstance()->get('param');
@@ -100,9 +100,10 @@ class Micro extends \Phalcon\Mvc\Micro
                             foreach ($paramHandlers as $paramHandler)
                             {
                                 if (true === isset($paramHandler[0])
-                                    && true === isset($paramHandler[1]))
+                                    && true === isset($paramHandler[1])
+                                    && true === isset($params[$paramHandler[0]]))
                                 {
-                                    $status = $this->callHandler('param', $paramHandler[1], $params);
+                                    $status = $this->callHandler('param', $paramHandler[1], [$params[$paramHandler[0]]]);
                                     if (false === $status)
                                     {
                                         return false;
@@ -193,8 +194,7 @@ class Micro extends \Phalcon\Mvc\Micro
         $callback = $callback->bindTo($this);
         $callback();
         array_pop($this->routeGroups);
-
-        return $this;
+        //return $this;
     }
 
     public function chainInit()
@@ -212,7 +212,6 @@ class Micro extends \Phalcon\Mvc\Micro
 
     public function getRouteGroup($pattern = '')
     {
-
         $first = trim(implode(',', $this->routeGroups),'/') ?: '';
         $middle = $this->pattern ?: '';
         $last = trim($pattern, '/') ?: '';
@@ -229,7 +228,6 @@ class Micro extends \Phalcon\Mvc\Micro
                 $uri = $middle;
             }
         }
-
         if($last)
         {
             if($uri)
@@ -241,9 +239,7 @@ class Micro extends \Phalcon\Mvc\Micro
                 $uri = $last;
             }
         }
-
         return $uri ? '/'.$uri : '/';
-
     }
 
     public function methods($methods = [])
