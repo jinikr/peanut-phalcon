@@ -60,8 +60,6 @@ class Router
 
     public function setRoute($pattern, $handler, $methods = [])
     {
-        //pr($type, $pattern, $methods,static::$instance->method);
-
         if (['MAP'] === $methods || true === in_array(static::$instance->method, $methods))
         {
             $matchPattern = false;

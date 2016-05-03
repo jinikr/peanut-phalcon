@@ -188,12 +188,35 @@ class Micro extends \Phalcon\Mvc\Micro
         return $returnedValue;
     }
 
-    public function group($prefix, \Closure $callback)
+    public function group($callback)
     {
-        array_push($this->routeGroups, $prefix);
-        $callback = $callback->bindTo($this);
-        $callback();
-        array_pop($this->routeGroups);
+        if(func_num_args() === 2)
+        {
+            list($prefix, $callback) = func_get_args();
+        }
+        else
+        {
+            $prefix = '';
+        }
+        if($callback instanceof \Closure)
+        {
+            if($prefix)
+            {
+                array_push($this->routeGroups, $prefix);
+            }
+            $callback = $callback->bindTo($this);
+            $callback();
+            if($prefix)
+            {
+                array_pop($this->routeGroups);
+            }
+        }
+        else
+        {
+            $msg = debug_backtrace()[0];
+            $msg = 'Closure can\'t be loaded'.PHP_EOL.'in '.$msg['file'].', line '.$msg['line'];
+            throw new \Exception($msg);
+        }
         //return $this;
     }
 
@@ -212,7 +235,7 @@ class Micro extends \Phalcon\Mvc\Micro
 
     public function getRouteGroup($pattern = '')
     {
-        $first = trim(implode(',', $this->routeGroups),'/') ?: '';
+        $first = trim(implode('/', $this->routeGroups),'/') ?: '';
         $middle = $this->pattern ?: '';
         $last = trim($pattern, '/') ?: '';
 
@@ -355,7 +378,6 @@ class ChainingException extends \Exception
 
     public function __construct($message = '', $code = 0, \Exception $previous = null)
     {
-
         $last = (debug_backtrace()[1]);
         if($last['class'] === 'Peanut\Phalcon\Mvc\Micro'
             && true === in_array(strtoupper($last['function']), \Peanut\Phalcon\Mvc\Micro::methods))
