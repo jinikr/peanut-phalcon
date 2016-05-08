@@ -122,13 +122,14 @@ class Micro extends \Phalcon\Mvc\Micro
                 $method  = $this->request->getMethod();
                 $parts = $this->getPatternParts($matchedRoute);
 
+                $routeParam = $router->getParam();
                 foreach($parts as $part)
                 {
-                    if(($_method = true === isset($router->PARAM['MAP'][$part]) ? 'MAP' : '')
-                        || ($_method = true === isset($router->PARAM[$method][$part]) ? $method : '')
+                    if(($_method = true === isset($routeParam['MAP'][$part]) ? 'MAP' : '')
+                        || ($_method = true === isset($routeParam[$method][$part]) ? $method : '')
                     )
                     {
-                        $check = $router->PARAM[$_method][$part];
+                        $check = $routeParam[$_method][$part];
                         foreach($check as $k => $_handler)
                         {
                             if(true === isset($params[$k]))
@@ -143,13 +144,14 @@ class Micro extends \Phalcon\Mvc\Micro
                     }
                 }
 
+                $routeBefore = $router->getBefore();
                 foreach($parts as $part)
                 {
-                    if(($_method = true === isset($router->BEFORE['MAP'][$part]) ? 'MAP' : '')
-                        || ($_method = true === isset($router->BEFORE[$method][$part]) ? $method : '')
+                    if(($_method = true === isset($routeBefore['MAP'][$part]) ? 'MAP' : '')
+                        || ($_method = true === isset($routeBefore[$method][$part]) ? $method : '')
                     )
                     {
-                        $_handler = $router->BEFORE[$_method][$part];
+                        $_handler = $routeBefore[$_method][$part];
                         $status = $this->callHandler($_handler, $params, 'before');
                         if (false === $status)
                         {
@@ -160,13 +162,14 @@ class Micro extends \Phalcon\Mvc\Micro
 
                 $returnedValue = $this->callHandler($handler, $params);
 
+                $routeAfter = $router->getAfter();
                 foreach($parts as $part)
                 {
-                    if(($_method = true === isset($router->AFTER['MAP'][$part]) ? 'MAP' : '')
-                        || ($_method = true === isset($router->AFTER[$method][$part]) ? $method : '')
+                    if(($_method = true === isset($routeAfter['MAP'][$part]) ? 'MAP' : '')
+                        || ($_method = true === isset($routeAfter[$method][$part]) ? $method : '')
                     )
                     {
-                        $_handler = $router->AFTER[$_method][$part];
+                        $_handler = $routeAfter[$_method][$part];
                         $status = $this->callHandler($_handler, $params, 'after');
                         if (false === $status)
                         {

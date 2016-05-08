@@ -24,4 +24,24 @@ class Router extends \Phalcon\Mvc\Router
         return $url;
     }
 
+    public function getParam()
+    {
+        return $this->PARAM;
+    }
+
+    public function getBefore()
+    {
+        return $this->BEFORE;
+    }
+
+    public function getAfter()
+    {
+        return $this->AFTER;
+    }
+
+    public function getRoute()
+    {
+        return $this->ROUTE;
+    }
+
 }
