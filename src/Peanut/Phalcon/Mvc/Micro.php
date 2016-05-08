@@ -5,12 +5,19 @@ namespace Peanut\Phalcon\Mvc;
 class Micro extends \Phalcon\Mvc\Micro
 {
 
-    const methods = ['POST', 'GET', 'PUT', 'PATCH', 'HEAD', 'DELETE', 'OPTIONS'];
-    private $methods = self::methods;
     private $pattern;
-    private $routeGroups = [];
+    private $instance = [];
 
-    private function callHandler($name, $handler, $args = [])
+    private function classLoader($className)
+    {
+            if (false === isset($this->instance[$className]))
+            {
+                $this->instance[$className] = new $className;
+            }
+            return $this->instance[$className];
+    }
+
+    private function callHandler($handler, $args = [], $name = '')
     {
         if (true === is_callable($handler))
         {
@@ -23,11 +30,11 @@ class Micro extends \Phalcon\Mvc\Micro
                 $tmp = explode('->', $handler);
                 try
                 {
-                    $class = Router::getInstance()->load($tmp[0]);
+                    $class = $this->classLoader($tmp[0]);
                 }
                 catch(\Throwable $e)
                 {
-                    throw new \Exception($name.' \''.$handler.'\' handler is not callable');
+                    throw new \Exception(($name ? $name.' ' : '' ).'\''.$handler.'\' handler is not callable: '.$e->getMessage());
                 }
                 if(true === is_callable([$class, $tmp[1]]))
                 {
@@ -35,19 +42,34 @@ class Micro extends \Phalcon\Mvc\Micro
                 }
                 else
                 {
-                    throw new \Exception($name.' \''.$handler.'\' handler is not callable');
+                    throw new \Exception(($name ? $name.' ' : '' ).'\''.$handler.'\' handler is not callable');
                 }
             }
             else
             {
-                throw new \Exception($name.' \''.$handler.'\' handler is not callable');
+                echo $handler;
+                $status = '';
             }
         }
         else
         {
-            throw new \Exception($name.' handler is not callable');
+            throw new \Exception(($name ? $name.' ' : '' ).str_replace(PHP_EOL, '', print_r($handler, true)).' is not support');
         }
         return $status;
+    }
+
+    public function getPatternParts($matchedRoute)
+    {
+        $pattern = str_replace(['#^','/([^/]*)$#u'], '', $matchedRoute->getPattern());
+        $spilits = preg_split('#(?<!\^|\\\)/#', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $url = '';
+        $parts = [];
+        foreach($spilits as $uri)
+        {
+            $url .= '/'.$uri;
+            $parts[] = '/'.trim($url,'/');
+        }
+        return $parts;
     }
 
     /**
@@ -58,10 +80,6 @@ class Micro extends \Phalcon\Mvc\Micro
      */
     public function handle($uri = null)
     {
-        foreach (Router::getInstance()->getRoutes() as $key => $value)
-        {
-            parent::{$value['method']}($value['pattern'], $value['handler']);
-        }
 
         $dependencyInjector = $this->_dependencyInjector;
         if (false === is_object($dependencyInjector))
@@ -73,12 +91,23 @@ class Micro extends \Phalcon\Mvc\Micro
         {
             $returnedValue = null;
             $router = $dependencyInjector->getShared("router");
+
+            foreach($router->ROUTE as $method => $_routes)
+            {
+                foreach($_routes as $url => $handler)
+                {
+                    $p = parent::{$method}($url, $handler);
+                }
+            }
+
             $router->handle($uri);
             $matchedRoute = $router->getMatchedRoute();
+
 
             if (true === is_object($matchedRoute))
             {
                 $handler = $this->_handlers[$matchedRoute->getRouteId()];
+
                 if (!$handler)
                 {
                     throw new \Exception("Matched route doesn't have an associated handler");
@@ -90,73 +119,65 @@ class Micro extends \Phalcon\Mvc\Micro
                     $params[$name] = $router->getMatches()[$key];
                 }
 
-                $routeParamHandlers = Router::getInstance()->get('param');
-                if (true === is_array($routeParamHandlers))
-                {
-                    foreach ($routeParamHandlers as $paramHandlers)
-                    {
-                        if (true === is_array($paramHandlers))
-                        {
-                            foreach ($paramHandlers as $paramHandler)
-                            {
-                                if (true === isset($paramHandler[0])
-                                    && true === isset($paramHandler[1])
-                                    && true === isset($params[$paramHandler[0]]))
-                                {
-                                    $status = $this->callHandler('param', $paramHandler[1], [$params[$paramHandler[0]]]);
-                                    if (false === $status)
-                                    {
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                $method  = $this->request->getMethod();
+                $parts = $this->getPatternParts($matchedRoute);
 
-                $routeBeforeHandlers = Router::getInstance()->get('before');
-                if (true === is_array($routeBeforeHandlers))
+                foreach($parts as $part)
                 {
-                    foreach ($routeBeforeHandlers as $beforeHandlers)
+                    if(($_method = true === isset($router->PARAM['MAP'][$part]) ? 'MAP' : '')
+                        || ($_method = true === isset($router->PARAM[$method][$part]) ? $method : '')
+                    )
                     {
-                        if (true === is_array($beforeHandlers))
+                        $check = $router->PARAM[$_method][$part];
+                        foreach($check as $k => $_handler)
                         {
-                            foreach ($beforeHandlers as $beforeHandler)
+                            if(true === isset($params[$k]))
                             {
-                                $status = $this->callHandler('before', $beforeHandler, $params);
+                                $status = $this->callHandler($_handler, [$params[$k]], 'param');
                                 if (false === $status)
                                 {
                                     return false;
                                 }
-                            }
+                            };
+                        };
+                    }
+                }
+
+                foreach($parts as $part)
+                {
+                    if(($_method = true === isset($router->BEFORE['MAP'][$part]) ? 'MAP' : '')
+                        || ($_method = true === isset($router->BEFORE[$method][$part]) ? $method : '')
+                    )
+                    {
+                        $_handler = $router->BEFORE[$_method][$part];
+                        $status = $this->callHandler($_handler, $params, 'before');
+                        if (false === $status)
+                        {
+                            return false;
                         }
                     }
                 }
 
-                $returnedValue = $this->callHandler('class', $handler, $params);
+                $returnedValue = $this->callHandler($handler, $params);
 
-                $routeAfterHandlers = Router::getInstance()->get('after');
-                if (true === is_array($routeAfterHandlers))
+                foreach($parts as $part)
                 {
-                    foreach ($routeAfterHandlers as $afterHandlers)
+                    if(($_method = true === isset($router->AFTER['MAP'][$part]) ? 'MAP' : '')
+                        || ($_method = true === isset($router->AFTER[$method][$part]) ? $method : '')
+                    )
                     {
-                        if (true === is_array($afterHandlers))
+                        $_handler = $router->AFTER[$_method][$part];
+                        $status = $this->callHandler($_handler, $params, 'after');
+                        if (false === $status)
                         {
-                            foreach ($afterHandlers as $afterHandler)
-                            {
-                                $status = $this->callHandler('after', $afterHandler, $params);
-                                if (false === $status)
-                                {
-                                    return false;
-                                }
-                            }
+                            return false;
                         }
                     }
                 }
             }
             else
             {
-                $returnedValue = $this->callHandler('notFound', $this->_notFoundHandler);
+                $returnedValue = $this->callHandler($this->_notFoundHandler, [], 'notFound');
             }
 
             $this->_returnedValue = $returnedValue;
@@ -165,7 +186,7 @@ class Micro extends \Phalcon\Mvc\Micro
         {
             if ($this->_errorHandler)
             {
-                $returnedValue = $this->callHandler('error', $this->_errorHandler, [$e]);
+                $returnedValue = $this->callHandler($this->_errorHandler, [$e], 'error');
 
                 if (true === is_object($returnedValue)
                     && !($returnedValue instanceof \Phalcon\Http\ResponseInterface))
@@ -188,189 +209,6 @@ class Micro extends \Phalcon\Mvc\Micro
         return $returnedValue;
     }
 
-    public function group($callback)
-    {
-        if(func_num_args() === 2)
-        {
-            list($prefix, $callback) = func_get_args();
-        }
-        else
-        {
-            $prefix = '';
-        }
-        if($callback instanceof \Closure)
-        {
-            if($prefix)
-            {
-                array_push($this->routeGroups, $prefix);
-            }
-            $callback = $callback->bindTo($this);
-            $callback();
-            if($prefix)
-            {
-                array_pop($this->routeGroups);
-            }
-        }
-        else
-        {
-            $msg = debug_backtrace()[0];
-            $msg = 'Closure can\'t be loaded'.PHP_EOL.'in '.$msg['file'].', line '.$msg['line'];
-            throw new \Exception($msg);
-        }
-        //return $this;
-    }
-
-    public function chainInit()
-    {
-        $this->methods = self::methods;
-        $this->pattern = '';
-        return $this;
-    }
-
-    public function pattern($pattern)
-    {
-        $this->pattern = trim($pattern, '/');
-        return $this;
-    }
-
-    public function getRouteGroup($pattern = '')
-    {
-        $first = trim(implode('/', $this->routeGroups),'/') ?: '';
-        $middle = $this->pattern ?: '';
-        $last = trim($pattern, '/') ?: '';
-
-        $uri = $first;
-        if($middle)
-        {
-            if($uri)
-            {
-                $uri .= '/'.$middle;
-            }
-            else
-            {
-                $uri = $middle;
-            }
-        }
-        if($last)
-        {
-            if($uri)
-            {
-                $uri .= '/'.$last;
-            }
-            else
-            {
-                $uri = $last;
-            }
-        }
-        return $uri ? '/'.$uri : '/';
-    }
-
-    public function methods($methods = [])
-    {
-        if(false === is_array($methods))
-        {
-            $methods = func_get_args();
-        }
-        if(!$methods)
-        {
-            $methods = self::methods;
-        }
-        $this->methods = array_map('strtoupper', $methods);
-        return $this;
-    }
-
-    public function param($key, $handler, $pattern = '')
-    {
-        if(func_num_args() === 3) list($pattern, $key, $handler) = func_get_args();
-        Router::getInstance()->setPattern('param', $this->getRouteGroup($pattern), [$key, $handler], $this->methods);
-        $this->chainInit();
-    }
-
-    public function before($handler, $pattern = '')
-    {
-        if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
-        Router::getInstance()->setPattern('before', $this->getRouteGroup($pattern), $handler, $this->methods);
-        $this->chainInit();
-    }
-
-    public function after($handler, $pattern = '')
-    {
-        if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
-        Router::getInstance()->setPattern('after', $this->getRouteGroup($pattern), $handler, $this->methods);
-        $this->chainInit();
-    }
-
-    public function any($handler, $pattern = '')
-    {
-        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, $this->methods);
-        $this->chainInit();
-    }
-
-    public function map($handler, $pattern = '')
-    {
-        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
-        if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['MAP']);
-        $this->chainInit();
-    }
-
-    public function get($handler, $pattern = '')
-    {
-        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
-        if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['GET']);
-        $this->chainInit();
-    }
-
-    public function post($handler, $pattern = '')
-    {
-        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
-        if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['POST']);
-        $this->chainInit();
-    }
-
-    public function put($handler, $pattern = '')
-    {
-        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
-        if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['PUT']);
-        $this->chainInit();
-    }
-
-    public function patch($handler, $pattern = '')
-    {
-        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
-        if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['PATCH']);
-        $this->chainInit();
-    }
-
-    public function head($handler, $pattern = '')
-    {
-        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
-        if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, ['HEAD']);
-        $this->chainInit();
-    }
-
-    public function delete($handler, $pattern = '')
-    {
-        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
-        if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, 'DELETE');
-        $this->chainInit();
-    }
-
-    public function options($handler, $pattern = '')
-    {
-        if(2 === func_num_args()) list($pattern, $handler) = func_get_args();
-        if(self::methods !== $this->methods) throw new ChainingException();
-        Router::getInstance()->setRoute($this->getRouteGroup($pattern), $handler, 'OPTIONS');
-        $this->chainInit();
-    }
-
 }
 
 class ChainingException extends \Exception
@@ -380,7 +218,7 @@ class ChainingException extends \Exception
     {
         $last = (debug_backtrace()[1]);
         if($last['class'] === 'Peanut\Phalcon\Mvc\Micro'
-            && true === in_array(strtoupper($last['function']), \Peanut\Phalcon\Mvc\Micro::methods))
+            && true === in_array(strtoupper($last['function']), \Peanut\Phalcon\Mvc\Router::methods))
         {
             $message .= $last['function'].'()은 methods()와 chaining될수 없습니다.'.PHP_EOL.'in '.$last['file'].', line '.$last['line'];
         }
