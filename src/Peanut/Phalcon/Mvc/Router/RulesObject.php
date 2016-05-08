@@ -166,6 +166,20 @@ class RulesObject extends \Peanut\Phalcon\Mvc\Router
 
 }
 
+class ChainingException extends \Exception
+{
+    public function __construct($message = '', $code = 0, \Exception $previous = null)
+    {
+        $last = (debug_backtrace()[1]);
+        if($last['class'] === 'Peanut\Phalcon\Mvc\Micro'
+            && true === in_array(strtoupper($last['function']), \Peanut\Phalcon\Mvc\Router::methods))
+        {
+            $message .= $last['function'].'()은 methods()와 chaining될수 없습니다.'.PHP_EOL.'in '.$last['file'].', line '.$last['line'];
+        }
+        parent::__construct($message);
+    }
+}
+
 /*
 
 $router = new \Peanut\Phalcon\Mvc\Router\RulesObject;
