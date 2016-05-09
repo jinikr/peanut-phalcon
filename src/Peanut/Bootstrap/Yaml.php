@@ -103,7 +103,7 @@ class Yaml
     {
         try
         {
-            $config = yaml_parse_file($configFile);
+            $config = (new \Phalcon\Config\Adapter\Yaml($configFile))->toArray();
             if(false === is_array($config))
             {
                 throw new \Exception($configFile.' can\'t be loaded.');
