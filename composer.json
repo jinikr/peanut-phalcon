@@ -1,4 +1,7 @@
 {
     "name" : "yejune/peanut",
-    "description" : ""
+    "description" : "",
+    "require": {
+        "ext-yaml": "*"
+    }
 }
