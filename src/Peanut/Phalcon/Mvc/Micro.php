@@ -5,20 +5,21 @@ namespace Peanut\Phalcon\Mvc;
 class Micro extends \Phalcon\Mvc\Micro
 {
 
-    private $pattern;
     private $instance = [];
+    private $pattern;
 
     private function classLoader($className)
     {
-            if (false === isset($this->instance[$className]))
-            {
-                $this->instance[$className] = new $className;
-            }
-            return $this->instance[$className];
+        if (false === isset($this->instance[$className]))
+        {
+            $this->instance[$className] = new $className;
+        }
+        return $this->instance[$className];
     }
 
     private function callHandler($handler, $args = [], $name = '')
     {
+
         if (true === is_callable($handler))
         {
             $status = call_user_func_array($handler, $args);
@@ -53,7 +54,7 @@ class Micro extends \Phalcon\Mvc\Micro
         }
         else
         {
-            throw new \Exception(($name ? $name.' ' : '' ).str_replace(PHP_EOL, '', print_r($handler, true)).' is not support');
+            throw new \Exception(($name ? $name.' ' : '' ).str_replace([PHP_EOL,' '], ['', ' '], print_r($handler, true)).' is not support');
         }
         return $status;
     }
@@ -92,7 +93,7 @@ class Micro extends \Phalcon\Mvc\Micro
             $returnedValue = null;
             $router = $dependencyInjector->getShared("router");
 
-            foreach($router->ROUTE as $method => $_routes)
+            foreach($router->getRoute() as $method => $_routes)
             {
                 foreach($_routes as $url => $handler)
                 {
@@ -102,7 +103,6 @@ class Micro extends \Phalcon\Mvc\Micro
 
             $router->handle($uri);
             $matchedRoute = $router->getMatchedRoute();
-
 
             if (true === is_object($matchedRoute))
             {
