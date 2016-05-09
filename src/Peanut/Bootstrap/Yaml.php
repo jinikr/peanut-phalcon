@@ -74,7 +74,7 @@ class Yaml
 
     private function dbProfiler(array $config)
     {
-        if($this->stageName !== 'localhost')
+        if($this->stageName !== 'local')
         {
             return;
         }
@@ -90,9 +90,9 @@ class Yaml
                 $profiler->stopProfile();
             }
         });
-        if(true === isset($config['stages'][$this->stageName]['databases']))
+        if(true === isset($config['stages'][$this->stageName]['database']['server']))
         {
-            foreach($config['stages'][$this->stageName]['databases'] as $name => $config)
+            foreach($config['stages'][$this->stageName]['database']['server'] as $name => $config)
             {
                 \Peanut\Phalcon\Pdo\Mysql::name($name)->setEventsManager($eventsManager);
             }
@@ -213,12 +213,9 @@ class Yaml
             $this->dbProfiler($config);
         }
 
-        $db = array_merge(['dsn' => $stage['database']['server']['master']], $stage['database']);
-
-        $this->di['db'] = function() use($db)
+        $this->di['db'] = function()
         {
-            $db = new \Phalcon\Db\Adapter\Pdo\Mysql($db);
-            return $db;
+            return \Peanut\Phalcon\Pdo\Mysql::name('master');
         };
     }
 
