@@ -5,7 +5,7 @@ namespace Peanut\Phalcon\Mvc\Router;
 class RulesObject extends \Peanut\Phalcon\Mvc\Router
 {
 
-    public function chainInit()
+    private function chainInit()
     {
         $this->methods = self::methods;
         $this->pattern = '';

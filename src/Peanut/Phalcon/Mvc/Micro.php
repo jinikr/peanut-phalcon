@@ -59,7 +59,7 @@ class Micro extends \Phalcon\Mvc\Micro
         return $status;
     }
 
-    public function getPatternParts($matchedRoute)
+    private function getPatternParts($matchedRoute)
     {
         $pattern = str_replace(['#^','/([^/]*)$#u'], '', $matchedRoute->getPattern());
         $spilits = preg_split('#(?<!\^|\\\)/#', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);

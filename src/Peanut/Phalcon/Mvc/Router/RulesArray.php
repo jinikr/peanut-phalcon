@@ -5,7 +5,7 @@ namespace Peanut\Phalcon\Mvc\Router;
 class RulesArray extends \Peanut\Phalcon\Mvc\Router
 {
 
-    public function getArgs($key)
+    private function getArgs($key)
     {
         if(1 === preg_match('#(?P<left>[^\s]+)(\s+(?P<middle>.*))?(\s+(?P<right>.*))?(\s+(?P<last>.*))?#', $key, $matches))
         {

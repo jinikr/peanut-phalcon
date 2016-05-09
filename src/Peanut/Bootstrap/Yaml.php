@@ -5,8 +5,8 @@ namespace Peanut\Bootstrap;
 class Yaml
 {
     private $di;
-    public $stageName = '';
-    public $debug = false;
+    private $stageName = '';
+    private $debug = false;
 
     private function setDi(\Phalcon\DI\FactoryDefault $di)
     {
@@ -99,7 +99,7 @@ class Yaml
         }
     }
 
-    public function getConfigFile($configFile)
+    private function getConfigFile($configFile)
     {
         try
         {
