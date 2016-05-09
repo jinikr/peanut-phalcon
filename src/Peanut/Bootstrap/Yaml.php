@@ -170,7 +170,7 @@ class Yaml
     {
         $config = $this->di['config'];
         $stageName = $this->stageName;
-        $tmp = [];
+        $deployerConfig = [];
 
         foreach($config['stages'] as $stageName => $stage)
         {
@@ -178,10 +178,10 @@ class Yaml
             unset($stage['deploy']['server']);
             foreach($serverList as $server)
             {
-                $tmp[] = array_merge(['server' => $server, 'stage' => $stageName],$stage['deploy']);
+                $deployerConfig[] = array_merge(['server' => $server, 'stage' => $stageName],$stage['deploy']);
             }
         }
-        return $tmp;
+        return $deployerConfig;
     }
 
     private function initDatabase($config)
@@ -194,14 +194,14 @@ class Yaml
         {
             if (true === isset($stage['database']) && true === is_array($stage['database']))
             {
-                $tmp = [];
+                $databaseConfig = [];
                 $serverList = $stage['database']['server'];
                 unset($stage['database']['server']);
                 foreach($serverList as $server => $dsn)
                 {
-                    $tmp[$server] = array_merge(['dsn' => $dsn], $stage['database']);
+                    $databaseConfig[$server] = array_merge(['dsn' => $dsn], $stage['database']);
                 }
-                return $tmp;
+                return $databaseConfig;
             }
             else
             {
