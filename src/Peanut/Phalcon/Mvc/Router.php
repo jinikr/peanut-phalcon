@@ -15,10 +15,10 @@ class Router extends \Phalcon\Mvc\Router
 
     public function getUri($uri='')
     {
-        $url = '/';
+        $url = '';
         if(true === is_array($this->groupParts) && 0 < count($this->groupParts))
         {
-            $url .= implode("/",$this->groupParts);
+            $url .= '/'.implode("/",$this->groupParts);
         }
         if($uri)
         {
