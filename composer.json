@@ -2,6 +2,7 @@
     "name" : "yejune/peanut",
     "description" : "",
     "require": {
-        "ext-yaml": "*"
+        "ext-yaml": "*",
+        "symfony/console": "*"
     }
 }
