@@ -24,6 +24,10 @@ class Router extends \Phalcon\Mvc\Router
         {
             $url .= '/'.$uri;
         }
+        if(!$url)
+        {
+            $url = '/';
+        }
         return $url;
     }
 
