@@ -166,24 +166,6 @@ class Yaml
         return $app;
     }
 
-    public function getDeployer()
-    {
-        $config = $this->di['config'];
-        $stageName = $this->stageName;
-        $deployerConfig = [];
-
-        foreach($config['stages'] as $stageName => $stage)
-        {
-            $serverList = $stage['deploy']['server'];
-            unset($stage['deploy']['server']);
-            foreach($serverList as $server)
-            {
-                $deployerConfig[] = array_merge(['server' => $server, 'stage' => $stageName],$stage['deploy']);
-            }
-        }
-        return $deployerConfig;
-    }
-
     private function initDatabase($config)
     {
         $stageName = $this->stageName;
