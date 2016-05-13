@@ -92,7 +92,7 @@ class Yaml
         });
         if(true === isset($config['stages'][$this->stageName]['database']['server']))
         {
-            foreach($config['stages'][$this->stageName]['database']['server'] as $name => $config)
+            foreach($config['stages'][$this->stageName]['database']['server'] as $name => $dsn)
             {
                 \Peanut\Phalcon\Pdo\Mysql::name($name)->setEventsManager($eventsManager);
             }
@@ -164,6 +164,24 @@ class Yaml
             phpinfo();
         });
         return $app;
+    }
+
+    public function getDeployer()
+    {
+        $config = $this->di['config'];
+        $stageName = $this->stageName;
+        $deployerConfig = [];
+
+        foreach($config['stages'] as $stageName => $stage)
+        {
+            $serverList = $stage['deploy']['server'];
+            unset($stage['deploy']['server']);
+            foreach($serverList as $server)
+            {
+                $deployerConfig[] = array_merge(['server' => $server, 'stage' => $stageName],$stage['deploy']);
+            }
+        }
+        return $deployerConfig;
     }
 
     private function initDatabase($config)
@@ -241,7 +259,7 @@ class Yaml
     {
         $this->di['router'] = function () use ($config)
         {
-            $router = new \Peanut\Phalcon\Mvc\Router\RulesArray();
+            $router = new \Peanut\Phalcon\Mvc\Router\Rules\Hash();
             $router->group($config['routes']);
             return $router;
         };
