@@ -60,16 +60,30 @@ class Micro extends \Phalcon\Mvc\Micro
 
     private function getPatternParts($matchedRoute)
     {
-        $pattern = str_replace(['#^','/([^/]*)$#u'], '', $matchedRoute->getPattern());
-        $spilits = preg_split('#(?<!\^|\\\)/#', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);
-        $url = '';
-        $parts = [];
-        foreach($spilits as $uri)
+        $pattern = $matchedRoute->getPattern();
+        if($pattern == '/')
         {
-            $url .= '/'.$uri;
-            $parts[] = '/'.trim($url,'/');
+            return [$pattern];
         }
-        return $parts;
+        else
+        {
+            $url = '';
+            $patternParts = [];
+            if(false !== strpos($pattern, '{'))
+            {
+                $patterns = preg_split('#(?<!\^|\\\)/#', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);
+            }
+            else
+            {
+                $patterns = explode('/', $pattern);
+            }
+            foreach($patterns as $uri)
+            {
+                $url .= '/'.$uri;
+                $patternParts[] = '/'.trim($url,'/');
+            }
+            return $patternParts;
+        }
     }
 
     /**
