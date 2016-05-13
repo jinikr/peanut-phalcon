@@ -19,7 +19,6 @@ class Micro extends \Phalcon\Mvc\Micro
 
     private function callHandler($handler, $args = [], $name = '')
     {
-
         if (true === is_callable($handler))
         {
             $status = call_user_func_array($handler, $args);
