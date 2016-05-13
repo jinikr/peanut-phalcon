@@ -1,8 +1,8 @@
 <?php
 
-namespace Peanut\Phalcon\Mvc\Router;
+namespace Peanut\Phalcon\Mvc\Router\Rules;
 
-class RulesArray extends \Peanut\Phalcon\Mvc\Router
+class Hash extends \Peanut\Phalcon\Mvc\Router
 {
 
     private function getArgs($key)

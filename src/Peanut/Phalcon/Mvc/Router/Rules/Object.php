@@ -1,8 +1,8 @@
 <?php
 
-namespace Peanut\Phalcon\Mvc\Router;
+namespace Peanut\Phalcon\Mvc\Router\Rules;
 
-class RulesObject extends \Peanut\Phalcon\Mvc\Router
+class Object extends \Peanut\Phalcon\Mvc\Router
 {
 
     private function chainInit()
