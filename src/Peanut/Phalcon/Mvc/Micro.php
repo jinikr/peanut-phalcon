@@ -69,13 +69,13 @@ class Micro extends \Phalcon\Mvc\Micro
         {
             $url = '';
             $patternParts = [];
-            if(false !== strpos($pattern, '{'))
+            if(false === strpos($pattern, '{'))
             {
-                $patterns = preg_split('#(?<!\^|\\\)/#', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);
+                $patterns = explode('/', $pattern);
             }
             else
             {
-                $patterns = explode('/', $pattern);
+                $patterns = preg_split('#(?<!\^|\\\)/#', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);
             }
             foreach($patterns as $uri)
             {
