@@ -7,6 +7,73 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 
     public static $instance;
 
+    public function connect($descriptor = NULL)
+    {
+        if ($descriptor === null)
+        {
+            $descriptor = $this->_descriptor;
+        }
+
+        if (true === isset($descriptor['username']))
+        {
+            $username = $descriptor['username'];
+            unset($descriptor['username']);
+        }
+        else
+        {
+            $username = null;
+        }
+
+        if (true === isset($descriptor['password']))
+        {
+            $password = $descriptor['password'];
+            unset($descriptor['password']);
+        }
+        else
+        {
+            $password = null;
+        }
+
+        if (true === isset($descriptor['options']))
+        {
+            $options = $descriptor['options'];
+            unset($descriptor['options']);
+        }
+        else
+        {
+            $options = [];
+        }
+
+        if (true === isset($descriptor['persistent']))
+        {
+            if ($descriptor['persistent'])
+            {
+                $options[\Pdo::ATTR_PERSISTENT] = true;
+            }
+            unset($descriptor['persistent']);
+        }
+
+        if (true === isset($descriptor['dialectClass']))
+        {
+            unset($descriptor['dialectClass']);
+        }
+
+        if (true === isset($descriptor['dsn']))
+        {
+            $dsnAttributes = $descriptor['dsn'];
+        }
+        else
+        {
+            $dsnParts = [];
+            foreach($descriptor as $key => $value)
+            {
+               $dsnParts[] = $key . '=' . $value;
+            }
+            $dsnAttributes = join(';', $dsnParts);
+        }
+        $this->_pdo = new \Pdo($dsnAttributes, $username, $password, $options);
+    }
+
     public static function name($name)
     {
         if (false === isset(self::$instance[$name]))
