@@ -6,12 +6,12 @@ class Router extends \Phalcon\Mvc\Router
 {
 
     const methods = ['POST', 'GET', 'PUT', 'PATCH', 'HEAD', 'DELETE', 'OPTIONS'];
-    protected $groupParts = [];
     protected $methods = self::methods;
-    protected $PARAM = [];
-    protected $BEFORE = [];
-    protected $AFTER = [];
-    protected $ROUTE = [];
+    protected $groupParts = [];
+    protected $paramHandler = [];
+    protected $beforeHandler = [];
+    protected $afterHandler = [];
+    protected $routeHandler = [];
 
     public function getUri($uri='')
     {
@@ -33,22 +33,22 @@ class Router extends \Phalcon\Mvc\Router
 
     public function getParam()
     {
-        return $this->PARAM;
+        return $this->paramHandler;
     }
 
     public function getBefore()
     {
-        return $this->BEFORE;
+        return $this->beforeHandler;
     }
 
     public function getAfter()
     {
-        return $this->AFTER;
+        return $this->afterHandler;
     }
 
     public function getRoute()
     {
-        return $this->ROUTE;
+        return $this->routeHandler;
     }
 
 }

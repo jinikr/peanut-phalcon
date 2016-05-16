@@ -64,7 +64,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(self::methods !== $this->methods) throw new ChainingException();
         foreach($this->methods as $method)
         {
-            $this->ROUTE['GET'][$this->getUri($pattern)] = $handler;
+            $this->routeHandler['GET'][$this->getUri($pattern)] = $handler;
         }
         $this->chainInit();
     }
@@ -75,7 +75,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(self::methods !== $this->methods) throw new ChainingException();
         foreach($this->methods as $method)
         {
-            $this->ROUTE['POST'][$this->getUri($pattern)] = $handler;
+            $this->routeHandler['POST'][$this->getUri($pattern)] = $handler;
         }
         $this->chainInit();
     }
@@ -86,7 +86,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(self::methods !== $this->methods) throw new ChainingException();
         foreach($this->methods as $method)
         {
-            $this->ROUTE['PUT'][$this->getUri($pattern)] = $handler;
+            $this->routeHandler['PUT'][$this->getUri($pattern)] = $handler;
         }
         $this->chainInit();
     }
@@ -97,7 +97,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(self::methods !== $this->methods) throw new ChainingException();
         foreach($this->methods as $method)
         {
-            $this->ROUTE['PATCH'][$this->getUri($pattern)] = $handler;
+            $this->routeHandler['PATCH'][$this->getUri($pattern)] = $handler;
         }
         $this->chainInit();
     }
@@ -108,7 +108,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(self::methods !== $this->methods) throw new ChainingException();
         foreach($this->methods as $method)
         {
-            $this->ROUTE['HEAD'][$this->getUri($pattern)] = $handler;
+            $this->routeHandler['HEAD'][$this->getUri($pattern)] = $handler;
         }
         $this->chainInit();
     }
@@ -119,7 +119,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(self::methods !== $this->methods) throw new ChainingException();
         foreach($this->methods as $method)
         {
-            $this->ROUTE['OPTIONS'][$this->getUri($pattern)] = $handler;
+            $this->routeHandler['OPTIONS'][$this->getUri($pattern)] = $handler;
         }
         $this->chainInit();
     }
@@ -129,7 +129,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
         foreach($this->methods as $method)
         {
-            $this->ROUTE[$method][$this->getUri($pattern)] = $handler;
+            $this->routeHandler[$method][$this->getUri($pattern)] = $handler;
         }
         $this->chainInit();
     }
@@ -139,7 +139,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
         foreach($this->methods as $method)
         {
-            $this->PARAM[$method][$this->getUri($pattern)][$param] = $handler;
+            $this->paramHandler[$method][$this->getUri($pattern)][$param] = $handler;
         }
         $this->chainInit();
     }
@@ -149,7 +149,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
         foreach($this->methods as $method)
         {
-            $this->BEFORE[$method][$this->getUri($pattern)] = $handler;
+            $this->beforeHandler[$method][$this->getUri($pattern)] = $handler;
         }
         $this->chainInit();
     }
@@ -159,7 +159,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         if(func_num_args() === 2) list($pattern, $handler) = func_get_args();
         foreach($this->methods as $method)
         {
-            $this->AFTER[$method][$this->getUri($pattern)] = $handler;
+            $this->afterHandler[$method][$this->getUri($pattern)] = $handler;
         }
         $this->chainInit();
     }

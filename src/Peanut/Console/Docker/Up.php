@@ -21,15 +21,37 @@ class Up extends \Peanut\Console\Command
 
     public function exec()
     {
+        // osx인지 확인, docker, vbox, docker-machine, docker-compose 설치 확인,ååå
+        $this->writeln('<info>Initializing docker-machine</info>');
+
+        $uname = $this->command('uname -a')->toString();
+        if(false === strpos($uname, 'Darwin'))
+        {
+            $this->writeln('└─ The operating system not supported.');
+            exit();
+        }
+
+        $brew = $this->command('which brew')->toString();
+        if(!$brew)
+        {
+            $this->command('/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"');
+        }
+        $this->writeln('└─ Brew Ready!');
+
+        $this->command('brew cask install dockertoolbox');
+        $this->writeln('└─ Docker Ready!');
+
         $machineName = 'bootappV2';
         $machineIp = '192.168.66.200/24';
+
         $domainNginxName = 'dev.local.com';
         $domainMysqlName = 'dev.mysql.local.com';
+
+        $dockerNetwork = '172.26.0.0';
         $dockerNginxIp = '172.26.0.101';
         $dockerMysqlIp = '172.26.0.102';
 
-        $this->writeln('<info>Initializing docker-machine</info>');
-        $this->command('docker-machine rm -f '.$machineName);
+        //$this->command('docker-machine rm -f '.$machineName);
 
         $dockerExists = $this->command('docker-machine status '.$machineName.' 2> /dev/null || echo ""')->toString();
         if('Stopped' === $dockerExists)
@@ -42,10 +64,6 @@ class Up extends \Peanut\Console\Command
         }
         else if('Running' === $dockerExists)
         {
-            //$this->writeln('└─ Docker is exist!');
-            //$this->writeln('');
-            //$this->writeln("<info>Restarting docker-machine</info>");
-            //$this->command('/usr/local/bin/docker-machine restart '.$machineName);
             $this->writeln('└─ Docker is up and running!');
         }
         else
@@ -61,9 +79,10 @@ class Up extends \Peanut\Console\Command
             if(true === isset($match['key']) && true === isset($match['value']))
             {
                 putenv($match['key'].'='.$match['value']);
-           }
+            }
         }
 
+        // container restart
         $this->writeln('');
         $this->writeln('<info>Check docker-machine IP</info>');
         $dockerIp = $this->command('docker-machine ip '.$machineName);
@@ -71,9 +90,9 @@ class Up extends \Peanut\Console\Command
 
         $this->writeln('');
         $this->writeln('<info>Add static routes</info>');
-        $message = $this->command('sudo route -n delete 172.26.0.0/16 '.$dockerIp);
+        $message = $this->command('sudo route -n delete '.$dockerNetwork.'/16 '.$dockerIp);
         $this->writeln('└─ Ok');
-        $message = $this->command('sudo route -n add 172.26.0.0/16 '.$dockerIp);
+        $message = $this->command('sudo route -n add '.$dockerNetwork.'/16 '.$dockerIp);
         $this->writeln('└─ Ok');
 
         $this->writeln('');
@@ -84,9 +103,17 @@ class Up extends \Peanut\Console\Command
         $message = $this->command('sudo -- sh -c -e "echo \''.$dockerMysqlIp.' '.$domainMysqlName.'\' >> /etc/hosts";');
         $this->writeln('└─ Ok');
 
-        $message = $this->command('docker-compose up -d');
+        $this->writeln('');
+        $this->writeln('<info>Docker compose up</info>');
 
-        $message = $this->command('docker exec -ti $(docker ps -f name=php -q) sh -c  "cd /var/www/ && composer install"');
+        $message = $this->command('docker-compose down');
+        putenv('COMPOSE_HTTP_TIMEOUT=10');
+        $message = $this->command('docker-compose up -d --build --remove-orphans');
+
+        // compose install
+        $this->writeln('');
+        $this->writeln('<info>Php composer install</info>');
+        $message = $this->command('docker exec -i $(docker ps -f name=php -q) sh -c  "cd /var/www/ && composer install"');
 
     }
 }

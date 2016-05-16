@@ -7,55 +7,34 @@ class Hash extends \Peanut\Phalcon\Mvc\Router
 
     private function getArgs($key)
     {
-        if(1 === preg_match('#(?P<left>[^\s]+)(\s+(?P<middle>.*))?(\s+(?P<right>.*))?(\s+(?P<last>.*))?#', $key, $matches))
+        if(1 === preg_match('#(?P<type>[^\s]+)(\s+(?P<left>.*))?(\s+(?P<middle>.*))?(\s+(?P<right>.*))?#', $key, $matches))
         {
-            $count = count($matches);
-            $type = strtoupper($matches['left']);
-
-            if($type == 'PARAM')
+            $type = strtolower($matches['type']);
+            switch ($type)
             {
-                return [
-                    $type
-                    , ''
-                    , isset($matches['right']) ? array_map(explode('|', $matches['right']), 'strtoupper') : ['MAP']
-                    , $matches['middle']
-                ];
-            }
-            else if($type == 'BEFORE')
-            {
-                return [
-                    $type
-                    , ''
-                    , isset($matches['middle']) ? array_map('strtoupper', explode('|', $matches['middle'])) : ['MAP']
-                    , ''
-                ];
-            }
-            else if($type == 'AFTER')
-            {
-                return [
-                    $type
-                    , ''
-                    , isset($matches['middle']) ? array_map('strtoupper', explode('|', $matches['middle'])) : ['MAP']
-                    , ''
-                ];
-            }
-            else if($type == 'ANY')
-            {
-                return [
-                    $type
-                    , isset($matches['right']) ? trim($matches['right'], '/') : ''
-                    , array_map('strtoupper', explode('|', $matches['middle']))
-                    , ''
-                ];
-            }
-            else
-            {
-                return [
-                    $type
-                    , isset($matches['middle']) ? trim($matches['middle'], '/') : ''
-                    , [$type]
-                    , ''
-                ];
+                case 'param':
+                    return [
+                        $type
+                        , isset($matches['right']) ? trim($matches['right'], '/') : ''
+                        , isset($matches['middle']) ? array_map('strtoupper', explode('|', $matches['middle'])) : ['MAP']
+                        , $matches['left']
+                    ];
+                case 'before':
+                case 'after':
+                case 'any':
+                    return [
+                        $type
+                        , isset($matches['middle']) ? trim($matches['middle'], '/') : ''
+                        , isset($matches['left']) ? array_map('strtoupper', explode('|', $matches['left'])) : ['MAP']
+                        , ''
+                    ];
+                default:
+                    return [
+                        $type
+                        , isset($matches['left']) ? trim($matches['left'], '/') : ''
+                        , [strtoupper($type)]
+                        , ''
+                    ];
             }
         }
     }
@@ -68,43 +47,33 @@ class Hash extends \Peanut\Phalcon\Mvc\Router
             {
                 switch ($type)
                 {
-                    case 'GROUP':
+                    case 'group':
                         array_push($this->groupParts, $uri);
                         $this->group($value);
                         array_pop($this->groupParts);
                         break;
-                    case 'BEFORE':
-                        $url = $this->getUri();
+                    case 'param':
+                        $url = $this->getUri($uri);
                         foreach($methods as $method)
                         {
-                            $this->{$type}[$method][$url] = $value;
+                            $this->{$type.'Handler'}[$method][$url][$param] = $value;
                         }
                         break;
-                    case 'AFTER':
-                        $url = $this->getUri();
+                    case 'before':
+                    case 'after':
+                        $url = $this->getUri($uri);
                         foreach($methods as $method)
                         {
-                            $this->{$type}[$method][$url] = $value;
+                            $this->{$type.'Handler'}[$method][$url] = $value;
                         }
                         break;
-                    case 'PARAM':
-                        $url = $this->getUri();
-                        foreach($methods as $method)
-                        {
-                            $this->{$type}[$method][$url][$param] = $value;
-                        }
-                        break;
-                    case 'ANY':
-                        $url = $this->getUri();
-                        foreach($methods as $method)
-                        {
-                            $this->ROUTE[$method][$url] = $value;
-                        }
-                        break;
+                    case 'any':
                     default:
                         $url = $this->getUri($uri);
-                        $this->ROUTE[$type][$url] = $value;
-
+                        foreach($methods as $method)
+                        {
+                            $this->routeHandler[$method][$url] = $value;
+                        }
                         break;
                 }
             }
@@ -121,7 +90,7 @@ class Hash extends \Peanut\Phalcon\Mvc\Router
 routes:
   param name: \App\Controllers\V1->checkId
   group {huga:[huga|huga]{4}}:
-    before get|post: \App\Controllers\V1->before
+    before map test/adf: \App\Controllers\V1->before
     after: \App\Controllers\V1->after
     param name: \App\Controllers\V1->checkId2
     get {name}: \App\Controllers\V1->getInfo
