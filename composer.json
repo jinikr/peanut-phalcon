@@ -1,6 +1,9 @@
 {
     "name" : "yejune/peanut",
     "description" : "",
+    "bin": [
+        "bin/bootapp"
+    ],
     "require": {
         "ext-yaml": "*",
         "symfony/console": "*"
