@@ -26,8 +26,9 @@ class Command extends \Symfony\Component\Console\Command\Command
         exit();
     }
 
-    public function command($command, $timeout = 600)
+    public function command($command, $input = null)
     {
+        $timeout = 600;
         $command = str_replace(PHP_EOL, '', $command);
         if ($this->output->getVerbosity()) {
             $this->output->writeln("Run: \e[1m".$command."\e[0m");
@@ -35,6 +36,10 @@ class Command extends \Symfony\Component\Console\Command\Command
 
         $process = new Process($command);
         $process->setTimeout($timeout);
+        if($input)
+        {
+            $process->setInput($input);
+        }
         $callback = function ($type, $buffer)
         {
             if (OutputInterface::VERBOSITY_DEBUG <= $this->output->getVerbosity()) {

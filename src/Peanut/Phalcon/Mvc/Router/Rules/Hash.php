@@ -7,7 +7,7 @@ class Hash extends \Peanut\Phalcon\Mvc\Router
 
     private function getArgs($key)
     {
-        if(1 === preg_match('#(?P<type>[^\s]+)(\s+(?P<left>.*))?(\s+(?P<middle>.*))?(\s+(?P<right>.*))?#', $key, $matches))
+        if(1 === preg_match('#(?P<type>[^\s]+)(\s+(?P<left>.*))?(\s+(?P<center>.*))?(\s+(?P<right>.*))?#', $key, $matches))
         {
             $type = strtolower($matches['type']);
             switch ($type)
@@ -16,7 +16,7 @@ class Hash extends \Peanut\Phalcon\Mvc\Router
                     return [
                         $type
                         , isset($matches['right']) ? trim($matches['right'], '/') : ''
-                        , isset($matches['middle']) ? array_map('strtoupper', explode('|', $matches['middle'])) : ['MAP']
+                        , isset($matches['center']) ? array_map('strtoupper', explode('|', $matches['center'])) : ['MAP']
                         , $matches['left']
                     ];
                 case 'before':
@@ -24,7 +24,7 @@ class Hash extends \Peanut\Phalcon\Mvc\Router
                 case 'any':
                     return [
                         $type
-                        , isset($matches['middle']) ? trim($matches['middle'], '/') : ''
+                        , isset($matches['center']) ? trim($matches['center'], '/') : ''
                         , isset($matches['left']) ? array_map('strtoupper', explode('|', $matches['left'])) : ['MAP']
                         , ''
                     ];

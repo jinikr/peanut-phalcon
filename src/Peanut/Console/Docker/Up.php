@@ -7,6 +7,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\InputStream;
 
 class Up extends \Peanut\Console\Command
 {
@@ -52,14 +54,23 @@ class Up extends \Peanut\Console\Command
         $dockerMysqlIp = '172.26.0.102';
 
         //$this->command('docker-machine rm -f '.$machineName);
-
         $dockerExists = $this->command('docker-machine status '.$machineName.' 2> /dev/null || echo ""')->toString();
         if('Stopped' === $dockerExists)
         {
             $this->writeln('└─ Docker is exist!');
             $this->writeln('');
-            $this->writeln("<info>Restarting docker-machine</info>");
-            $this->command('/usr/local/bin/docker-machine restart '.$machineName);
+            $this->writeln("<info>Starting docker-machine</info>");
+            $this->command('/usr/local/bin/docker-machine start '.$machineName);
+            $this->command('/usr/local/bin/docker-machine regenerate-certs '.$machineName, 'y');
+            $this->writeln('└─ Docker is up and running!');
+        }
+        else if('Saved' === $dockerExists)
+        {
+            $this->writeln('└─ Docker is exist!');
+            $this->writeln('');
+            $this->writeln("<info>Starting docker-machine</info>");
+            $this->command('/usr/local/bin/docker-machine start '.$machineName);
+            $this->command('/usr/local/bin/docker-machine regenerate-certs '.$machineName, 'y');
             $this->writeln('└─ Docker is up and running!');
         }
         else if('Running' === $dockerExists)
@@ -73,6 +84,7 @@ class Up extends \Peanut\Console\Command
             $this->command('/usr/local/bin/docker-machine create --driver virtualbox --virtualbox-memory 2048 --virtualbox-hostonly-cidr "'.$machineIp.'" '.$machineName);
             $this->writeln('└─ Docker is up and running!');
         }
+
         foreach($this->command('docker-machine env '.$machineName)->toArray() as $export)
         {
             preg_match('/export (?P<key>.*)="(?P<value>.*)"/', $export, $match);
@@ -113,7 +125,17 @@ class Up extends \Peanut\Console\Command
         // compose install
         $this->writeln('');
         $this->writeln('<info>Php composer install</info>');
-        $message = $this->command('docker exec -i $(docker ps -f name=php -q) sh -c  "cd /var/www/ && composer install"');
+
+        $chk = $this->command('if [ -d vendor ]; then echo "true"; else echo "false"; fi')->toBool();
+        if(true === $chk)
+        {
+            $message = $this->command('docker exec -i $(docker ps -f name=php -q) sh -c  "cd /var/www/ && composer update"');
+        }
+        else
+        {
+            $message = $this->command('docker exec -i $(docker ps -f name=php -q) sh -c  "cd /var/www/ && composer install"');
+        }
+        $this->writeln('└─ Ok');
 
     }
 }
