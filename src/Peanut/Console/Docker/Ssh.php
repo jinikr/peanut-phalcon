@@ -26,7 +26,7 @@ class Ssh extends \Peanut\Console\Command
 
     protected function exec()
     {
-        $machineName = 'bootappV2';
+        $machineName = 'bootappV3';
         system("docker-machine ssh ".$machineName." > `tty`");//$this->command('docker-machine ssh '.$machineName');
     }
 }

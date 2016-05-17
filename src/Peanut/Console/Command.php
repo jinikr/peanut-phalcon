@@ -58,10 +58,10 @@ class Command extends \Symfony\Component\Console\Command\Command
         $callback = $callback->bindTo($this);
         $process->run($callback);
 
-        if (!$process->isSuccessful()) {
+        if (!$process->isSuccessful() && $process->getErrorOutput()) {
             throw new \Peanut\Console\RuntimeException($process->getErrorOutput());
         }
-        return new \Peanut\Console\Command\Result($process->getOutput());
+        return new \Peanut\Console\Command\Result($process->getErrorOutput().$process->getOutput());
     }
 
     public function isFile($file)

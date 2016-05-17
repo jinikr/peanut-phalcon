@@ -23,5 +23,6 @@ $application = new \Symfony\Component\Console\Application('bootapp', '0.0.1');
 $application->add(new \Peanut\Console\Docker\Up());
 $application->add(new \Peanut\Console\Docker\Ssh());
 $application->add(new \Peanut\Console\Docker\Halt());
+$application->add(new \Peanut\Console\Docker\Composer());
 $application->run();
 
