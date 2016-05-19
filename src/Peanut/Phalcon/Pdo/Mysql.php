@@ -71,6 +71,8 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
             }
             $dsnAttributes = join(';', $dsnParts);
         }
+        $options[\Pdo::ATTR_ERRMODE] = \Pdo::ERRMODE_EXCEPTION;
+        $options[\Pdo::ATTR_EMULATE_PREPARES] = false;
         $this->_pdo = new \Pdo($dsnAttributes, $username, $password, $options);
     }
 
@@ -99,11 +101,11 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         return self::$instance[$name];
     }
 
-    public function gets($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
+    public function gets($statement, $bindParameters = [], $bindTypes = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
         try
         {
-            return parent::fetchAll($statement, $mode, $bindParameters);
+            return parent::fetchAll($statement, $mode, $bindParameters, $bindTypes);
         }
         catch (\PDOException $e)
         {
@@ -111,11 +113,11 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
     }
 
-    public function get($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
+    public function get($statement, $bindParameters = [], $bindTypes = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
         try
         {
-            return parent::fetchOne($statement, $mode, $bindParameters);
+            return parent::fetchOne($statement, $mode, $bindParameters, $bindTypes);
         }
         catch (\PDOException $e)
         {
@@ -123,11 +125,11 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
     }
 
-    public function get1($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
+    public function get1($statement, $bindParameters = [], $bindTypes = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
         try
         {
-            $results = parent::fetchOne($statement, $mode, $bindParameters);
+            $results = parent::fetchOne($statement, $mode, $bindParameters, $bindTypes);
             if(true === is_array($results))
             {
                 foreach($results as $result)
@@ -143,11 +145,11 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
     }
 
-    public function set($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
+    public function set($statement, $bindParameters = [], $bindTypes = [])
     {
         try
         {
-            return parent::execute($statement, $bindParameters, $mode);
+            return parent::execute($statement, $bindParameters, $bindTypes);
         }
         catch (\PDOException $e)
         {
@@ -155,9 +157,9 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
     }
 
-    public function setId($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
+    public function setId($statement, $bindParameters = [], $bindTypes = [])
     {
-        if (true === self::set($statement, $bindParameters, $mode))
+        if (true === self::set($statement, $bindParameters, $bindTypes))
         {
             return parent::lastInsertId();
         }
