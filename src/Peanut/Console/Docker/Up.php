@@ -75,7 +75,12 @@ class Up extends \Peanut\Console\Command
         // docker
         {
 
-            $dockerExists = $this->command($machineBinary.' status '.$machineName.' 2> /dev/null || echo ""')->toString();
+            // docker machine 존재여부 확인
+            $dockerExists = false;
+            $findDockerMachineName = $this->command($machineBinary." ls | grep ".$machineName." | awk '{print $1}'")->toString();
+            if ($findDockerMachineName === $machineName) {
+                $dockerExists = $this->command($machineBinary.' status '.$machineName)->toString();
+            }
             if('Stopped' === $dockerExists)
             {
                 $this->writeln('└─ Docker is exist!');
