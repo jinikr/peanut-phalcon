@@ -71,6 +71,12 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
             }
             $dsnAttributes = join(';', $dsnParts);
         }
+
+        $options[\Pdo::ATTR_ERRMODE] = \Pdo::ERRMODE_EXCEPTION;
+        $options[\Pdo::ATTR_EMULATE_PREPARES] = false;
+        $options[\Pdo::ATTR_STRINGIFY_FETCHES] = false;
+        $options[\Pdo::ATTR_DEFAULT_FETCH_MODE] = \Pdo::FETCH_ASSOC;
+
         $this->_pdo = new \Pdo($dsnAttributes, $username, $password, $options);
     }
 
@@ -99,11 +105,30 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         return self::$instance[$name];
     }
 
+    public function getBindTypes($params)
+    {
+        $paramTypes = [];
+        foreach ($params as $key => $param) {
+            if (true === is_int($param)) {
+                $paramTypes[$key] = \Pdo::PARAM_INT;
+            } else if (true === is_bool($param)) {
+                $paramTypes[$key] = \Pdo::PARAM_BOOL;
+            } else if (true === is_null($param)) {
+                $paramTypes[$key] = \Pdo::PARAM_NULL;
+            } else if (true === is_string($param)) {
+                $paramTypes[$key] = \Pdo::PARAM_STR;
+            } else {
+                throw new \Exception(gettype($param).' not support');
+            }
+        }
+        return $paramTypes;
+    }
+
     public function gets($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
         try
         {
-            return parent::fetchAll($statement, $mode, $bindParameters);
+            return parent::fetchAll($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
         }
         catch (\PDOException $e)
         {
@@ -115,7 +140,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     {
         try
         {
-            return parent::fetchOne($statement, $mode, $bindParameters);
+            return parent::fetchOne($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
         }
         catch (\PDOException $e)
         {
@@ -127,7 +152,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     {
         try
         {
-            $results = parent::fetchOne($statement, $mode, $bindParameters);
+            $results = parent::fetchOne($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
             if(true === is_array($results))
             {
                 foreach($results as $result)
