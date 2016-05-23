@@ -4,7 +4,7 @@ namespace Peanut\Bootstrap;
 class Yaml
 {
     /**
-     * @var mixed
+     * @var \Phalcon\DI\FactoryDefault
      */
     public $di;
     /**
@@ -12,7 +12,7 @@ class Yaml
      */
     public $stageName = '';
     /**
-     * @var mixed
+     * @var bool
      */
     public $debug = false;
 
@@ -33,7 +33,7 @@ class Yaml
     }
 
     /**
-     * @return mixed
+     * @return \Phalcon\DI\FactoryDefault
      */
     public function getDI()
     {
@@ -41,7 +41,7 @@ class Yaml
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getHttpHost()
     {
@@ -63,8 +63,7 @@ class Yaml
     }
 
     /**
-     * @param  array   $config
-     * @return mixed
+     * @param array $config
      */
     public function initConfig(array $config)
     {
@@ -74,8 +73,7 @@ class Yaml
     }
 
     /**
-     * @param  array   $config
-     * @return mixed
+     * @param array $config
      */
     public function initSession(array $config)
     {
@@ -140,7 +138,7 @@ class Yaml
 
     /**
      * @param  $configFile
-     * @return mixed
+     * @return array
      */
     public function getConfigFile($configFile)
     {
@@ -158,8 +156,8 @@ class Yaml
     }
 
     /**
-     * @param  \Phalcon\Mvc\Micro $app
-     * @return mixed
+     * @param  \Phalcon\Mvc\Micro   $app
+     * @return \Phalcon\Mvc\Micro
      */
     public function __invoke(\Phalcon\Mvc\Micro $app)
     {
@@ -184,9 +182,9 @@ class Yaml
     }
 
     /**
-     * @param  \Phalcon\Mvc\Micro $app
-     * @param  array              $config
-     * @return mixed
+     * @param  \Phalcon\Mvc\Micro   $app
+     * @param  array                $config
+     * @return \Phalcon\Mvc\Micro
      */
     public function run(\Phalcon\Mvc\Micro $app, array $config)
     {
@@ -216,8 +214,7 @@ class Yaml
     }
 
     /**
-     * @param  $config
-     * @return mixed
+     * @param $config
      */
     public function initDatabase($config)
     {
@@ -288,8 +285,7 @@ class Yaml
     }
 
     /**
-     * @param  $config
-     * @return mixed
+     * @param $config
      */
     public function initRouter($config)
     {
