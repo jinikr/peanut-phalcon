@@ -5,7 +5,7 @@ class Router extends \Phalcon\Mvc\Router
 {
     const METHODS = ['POST', 'GET', 'PUT', 'PATCH', 'HEAD', 'DELETE', 'OPTIONS'];
     /**
-     * @var mixed
+     * @var array
      */
     protected $methods = self::METHODS;
     /**
@@ -31,14 +31,14 @@ class Router extends \Phalcon\Mvc\Router
 
     /**
      * @param  $uri
-     * @return mixed
+     * @return string
      */
     public function getUri($uri = '')
     {
         $url = '';
 
         if (true === is_array($this->groupParts) && 0 < count($this->groupParts)) {
-            $url .= '/'.implode("/", $this->groupParts);
+            $url .= '/'.implode('/', $this->groupParts);
         }
 
         if ($uri) {
@@ -53,7 +53,7 @@ class Router extends \Phalcon\Mvc\Router
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getParam()
     {
@@ -61,7 +61,7 @@ class Router extends \Phalcon\Mvc\Router
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getBefore()
     {
@@ -69,7 +69,7 @@ class Router extends \Phalcon\Mvc\Router
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getAfter()
     {
@@ -77,7 +77,7 @@ class Router extends \Phalcon\Mvc\Router
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getRoute()
     {

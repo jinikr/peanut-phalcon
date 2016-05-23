@@ -71,13 +71,14 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     }
 
     /**
-     * @param $name
+     * @param  $name
+     * @throws \PDOException|\Exception
+     * @return \Pdo
      */
     public static function name($name)
     {
         if (false === isset(self::$instance[$name])) {
-            try
-            {
+            try {
                 $di                    = \Phalcon\Di::getDefault();
                 self::$instance[$name] = new Self($di['databases'][$name]);
             } catch (\Phalcon\Di\Exception $e) {
@@ -94,6 +95,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 
     /**
      * @param  $params
+     * @throws \Exception
      * @return array
      */
     public function getBindTypes($params)
@@ -118,14 +120,15 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     }
 
     /**
-     * @param $statement
-     * @param array        $bindParameters
-     * @param $mode
+     * @param  $statement
+     * @param  array           $bindParameters
+     * @param  $mode
+     * @throws \PDOException
+     * @return array
      */
     public function gets($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
-        try
-        {
+        try {
             return parent::fetchAll($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
         } catch (\PDOException $e) {
             throw $e;
@@ -133,14 +136,15 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     }
 
     /**
-     * @param $statement
-     * @param array        $bindParameters
-     * @param $mode
+     * @param  $statement
+     * @param  array           $bindParameters
+     * @param  $mode
+     * @throws \PDOException
+     * @return array
      */
     public function get($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
-        try
-        {
+        try {
             return parent::fetchOne($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
         } catch (\PDOException $e) {
             throw $e;
@@ -149,14 +153,14 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 
     /**
      * @param  $statement
-     * @param  array        $bindParameters
+     * @param  array           $bindParameters
      * @param  $mode
+     * @throws \PDOException
      * @return mixed
      */
     public function get1($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
-        try
-        {
+        try {
             $results = parent::fetchOne($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
 
             if (true === is_array($results)) {
@@ -172,13 +176,14 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     }
 
     /**
-     * @param $statement
-     * @param array        $bindParameters
+     * @param  $statement
+     * @param  array           $bindParameters
+     * @throws \PdoException
+     * @return bool
      */
     public function set($statement, $bindParameters = [])
     {
-        try
-        {
+        try {
             return parent::execute($statement, $bindParameters, $this->getBindTypes($bindParameters));
         } catch (\PDOException $e) {
             throw $e;
@@ -186,8 +191,9 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
     }
 
     /**
-     * @param $statement
-     * @param array        $bindParameters
+     * @param  $statement
+     * @param  array        $bindParameters
+     * @return int|false
      */
     public function setId($statement, $bindParameters = [])
     {
@@ -200,6 +206,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 
     /**
      * @param  $callback
+     * @throws \Exception
      * @return mixed
      */
     public function transaction(callable $callback)

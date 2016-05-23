@@ -18,8 +18,8 @@ class Basic
     }
 
     /**
-     * @param  \Phalcon\Mvc\Micro $app
-     * @return mixed
+     * @param  \Phalcon\Mvc\Micro   $app
+     * @return \Phalcon\Mvc\Micro
      */
     public function __invoke(\Phalcon\Mvc\Micro $app)
     {
@@ -30,9 +30,9 @@ class Basic
     }
 
     /**
-     * @param  \Phalcon\Mvc\Micro $app
-     * @param  array              $config
-     * @return mixed
+     * @param  \Phalcon\Mvc\Micro   $app
+     * @param  array                $config
+     * @return \Phalcon\Mvc\Micro
      */
     public function run(\Phalcon\Mvc\Micro $app, array $config)
     {
@@ -53,7 +53,7 @@ class Basic
     }
 
     /**
-     * @return mixed
+     * @return \Phalcon\DI\FactoryDefault
      */
     private function getDI()
     {
@@ -61,7 +61,7 @@ class Basic
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     private function getHttpHost()
     {

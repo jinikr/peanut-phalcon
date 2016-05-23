@@ -4,8 +4,8 @@ namespace Peanut\Phalcon\Http;
 class Response extends \Phalcon\Http\Response
 {
     /**
-     * @param  $content
-     * @return mixed
+     * @param  array   $content
+     * @return $this
      */
     public function setJsonContent($content)
     {
@@ -18,6 +18,9 @@ class Response extends \Phalcon\Http\Response
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getJsonContent()
     {
         return json_decode(parent::getContent(), true);

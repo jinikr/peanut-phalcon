@@ -31,7 +31,6 @@ class Up extends \Peanut\Console\Command
             $machineName = 'apiserver';
             strtolower($projectName);
 
-//print_r($config);
             foreach ($config['stages'][$enviroment]['services']['nginx']['vhosts'] as $key => $value) {
                 if (isset($value['server_alias']) && is_array($value['server_alias'])) {
                     $alias = $value['server_alias'];
@@ -48,6 +47,7 @@ class Up extends \Peanut\Console\Command
 
             $_bootappconf = file_get_contents(getcwd().'/.docker/nginx/bootapp.conf.tmpl');
             $nginx        = '';
+
             foreach ($serverConfig as $key => $value) {
                 $nginx .= strtr($_bootappconf, [
                     '{{project}}'       => $projectName.'-'.$value['server_name'][0],
@@ -65,17 +65,15 @@ class Up extends \Peanut\Console\Command
             file_put_contents(getcwd().'/.docker/nginx/Dockerfile', $dockerfile);
 
             $_php = file_get_contents(getcwd().'/.docker/php-fpm/bootapp.pool.conf.tmpl');
-            $php  = strtr($_php, [
-                '{{project}}' => $projectName
-            ])
+            $php  = strtr($_php, ['{{project}}' => $projectName])
                 .PHP_EOL.'env[ENVIRONMENT] = '.$enviroment
                 .PHP_EOL.'env[PROJECT_NAME] = '.$projectName;
             file_put_contents(getcwd().'/.docker/php-fpm/bootapp.pool.conf', $php);
 
+//$_compose = file_get_contents(getcwd() . '/docker-compose.yml.tmpl');
             //$_compose = file_get_contents(getcwd() . '/docker-compose.yml.tmpl');
-
             $compose = [
-                'version'  => "2",
+                'version'  => '2',
                 'services' => [
                     $projectName.'-'.'application' => [
                         'image'   => 'busybox',
@@ -179,14 +177,13 @@ class Up extends \Peanut\Console\Command
             $dockerBinary  = $this->command('which docker')->toString();
             $composeBinary = $this->command('which docker-compose')->toString();
 
-//osx 에 설치하면 compose관리 가능한데 추천하지 않음.
-
-//brew install composer
-
-//brew install php56-phalcon
-
-//brew install php56
-            //brew install php56-yaml
+            /*
+        osx 에 설치하면 compose관리 가능한데 추천하지 않음.
+        brew install composer
+        brew install php56-phalcon
+        brew install php56-yaml
+        brew install php56-yaml
+         */
         }
 
         // docker
@@ -196,21 +193,21 @@ class Up extends \Peanut\Console\Command
             if ('Stopped' === $dockerExists) {
                 $this->writeln('└─ Docker is exist!');
                 $this->writeln('');
-                $this->writeln("<info>Starting docker-machine</info>");
+                $this->writeln('<info>Starting docker-machine</info>');
                 $this->command($machineBinary.' start '.$machineName);
                 $this->command($machineBinary.' regenerate-certs '.$machineName, 'y');
                 $this->writeln('└─ Docker is up and running!');
             } elseif ('Saved' === $dockerExists) {
                 $this->writeln('└─ Docker is exist!');
                 $this->writeln('');
-                $this->writeln("<info>Starting docker-machine</info>");
+                $this->writeln('<info>Starting docker-machine</info>');
                 $this->command($machineBinary.' start '.$machineName);
                 $this->command($machineBinary.' regenerate-certs '.$machineName, 'y');
                 $this->writeln('└─ Docker is up and running!');
             } elseif ('Error' === $dockerExists) {
                 $this->writeln('└─ Docker is exist!');
                 $this->writeln('');
-                $this->writeln("<info>Starting docker-machine</info>");
+                $this->writeln('<info>Starting docker-machine</info>');
                 $this->command($machineBinary.' rm -f '.$machineName);
                 $this->command($machineBinary.' create --driver virtualbox --virtualbox-memory 2048 '.$machineName);
                 $this->writeln('└─ Docker is up and running!');
@@ -218,7 +215,7 @@ class Up extends \Peanut\Console\Command
                 $this->writeln('└─ Docker is up and running!');
             } else {
                 $this->writeln('');
-                $this->writeln("<info>Creating docker-machine</info>");
+                $this->writeln('<info>Creating docker-machine</info>');
                 $this->command($machineBinary.' create --driver virtualbox --virtualbox-memory 2048 '.$machineName);
                 $this->writeln('└─ Docker is up and running!');
             }
@@ -238,7 +235,7 @@ class Up extends \Peanut\Console\Command
 
 //  $message = $this->command($composeBinary.' -p '.$projectName.' down');
 
-//putenv('COMPOSE_HTTP_TIMEOUT=0');
+// putenv('COMPOSE_HTTP_TIMEOUT=0');
             // --remove-orphans docker-compose.yml 에 없는 설정 강제로 지우기
             $compose = $this->command($composeBinary.' -p '.$projectName.' up -d --build');
 

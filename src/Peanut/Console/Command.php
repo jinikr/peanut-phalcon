@@ -13,11 +13,12 @@ class Command extends \Symfony\Component\Console\Command\Command
     const N  = OutputInterface::VERBOSITY_NORMAL;
 
     /**
-     * @var mixed
+     * @var InputInterface
      */
     public $input;
+
     /**
-     * @var mixed
+     * @var OutputInterface
      */
     public $output;
 
@@ -36,8 +37,9 @@ class Command extends \Symfony\Component\Console\Command\Command
     }
 
     /**
-     * @param $command
-     * @param $input
+     * @param  $command
+     * @param  $input
+     * @throws \RuntineException
      */
     public function command($command, $input = null)
     {
@@ -82,7 +84,7 @@ class Command extends \Symfony\Component\Console\Command\Command
 
     /**
      * @param  $file
-     * @return mixed
+     * @return bool
      */
     public function isFile($file)
     {

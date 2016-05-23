@@ -205,7 +205,6 @@ class Yaml
                 pr($e);
             }
         );
-
         $app->get('/', function () {
             echo '/';
         });

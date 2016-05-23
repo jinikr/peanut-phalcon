@@ -4,7 +4,7 @@ namespace Peanut\Phalcon\Mvc\Router\Rules;
 class Object extends \Peanut\Phalcon\Mvc\Router
 {
     /**
-     * @return mixed
+     * @return $this
      */
     private function chainInit()
     {
@@ -16,7 +16,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
 
     /**
      * @param  $pattern
-     * @return mixed
+     * @return $this
      */
     public function pattern($pattern)
     {
@@ -27,7 +27,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
 
     /**
      * @param  array   $methods
-     * @return mixed
+     * @return $this
      */
     public function methods($methods = [])
     {
@@ -45,7 +45,8 @@ class Object extends \Peanut\Phalcon\Mvc\Router
     }
 
     /**
-     * @param $callback
+     * @param  $callback
+     * @throws \Exception
      */
     public function group($callback)
     {

@@ -45,7 +45,7 @@ class Request extends \Phalcon\Http\Request
     }
 
     /**
-     * Sets $_PUT parameter
+     * Sets $_GET parameter
      *
      * @param  $name
      * @param  $value
@@ -309,7 +309,7 @@ class Request extends \Phalcon\Http\Request
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getParams()
     {
@@ -317,7 +317,7 @@ class Request extends \Phalcon\Http\Request
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getRewriteUri()
     {
@@ -325,7 +325,7 @@ class Request extends \Phalcon\Http\Request
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getSegments()
     {
