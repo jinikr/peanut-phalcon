@@ -168,11 +168,11 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
     }
 
-    public function set($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
+    public function set($statement, $bindParameters = [])
     {
         try
         {
-            return parent::execute($statement, $bindParameters, $mode);
+            return parent::execute($statement, $bindParameters, $this->getBindTypes($bindParameters));
         }
         catch (\PDOException $e)
         {
@@ -180,9 +180,9 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
     }
 
-    public function setId($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
+    public function setId($statement, $bindParameters = [])
     {
-        if (true === self::set($statement, $bindParameters, $mode))
+        if (true === self::set($statement, $bindParameters))
         {
             return parent::lastInsertId();
         }
