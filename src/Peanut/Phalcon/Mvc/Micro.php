@@ -1,20 +1,36 @@
 <?php
-
 namespace Peanut\Phalcon\Mvc;
 
 class Micro extends \Phalcon\Mvc\Micro
 {
+    /**
+     * @var array
+     */
     private $instance = [];
+    /**
+     * @var mixed
+     */
     private $pattern;
 
+    /**
+     * @param  $className
+     * @return mixed
+     */
     private function classLoader($className)
     {
         if (false === isset($this->instance[$className])) {
-            $this->instance[$className] = new $className;
+            $this->instance[$className] = new $className();
         }
+
         return $this->instance[$className];
     }
 
+    /**
+     * @param  $handler
+     * @param  array      $args
+     * @param  $name
+     * @return mixed
+     */
     private function callHandler($handler, $args = [], $name = '')
     {
         if (true === is_callable($handler)) {
@@ -25,40 +41,50 @@ class Micro extends \Phalcon\Mvc\Micro
                 try {
                     $class = $this->classLoader($tmp[0]);
                 } catch (\Throwable $e) {
-                    throw new \Exception(($name ? $name . ' ' : '') . '\'' . $handler . '\' handler is not callable: ' . $e->getMessage());
+                    throw new \Exception(($name ? $name.' ' : '').'\''.$handler.'\' handler is not callable: '.$e->getMessage());
                 }
+
                 if (true === is_callable([$class, $tmp[1]])) {
                     $status = call_user_func_array([$class, $tmp[1]], $args);
                 } else {
-                    throw new \Exception(($name ? $name . ' ' : '') . '\'' . $handler . '\' handler is not callable');
+                    throw new \Exception(($name ? $name.' ' : '').'\''.$handler.'\' handler is not callable');
                 }
             } else {
                 echo $handler;
                 $status = '';
             }
         } else {
-            throw new \Exception(($name ? $name . ' ' : '') . str_replace([PHP_EOL, ' '], ['', ' '], print_r($handler, true)) . ' is not support');
+            throw new \Exception(($name ? $name.' ' : '').str_replace([PHP_EOL, ' '], ['', ' '], print_r($handler, true)).' is not support');
         }
+
         return $status;
     }
 
+    /**
+     * @param  $matchedRoute
+     * @return mixed
+     */
     private function getPatternParts($matchedRoute)
     {
         $pattern = $matchedRoute->getPattern();
-        if ($pattern == '/') {
+
+        if ('/' == $pattern) {
             return [$pattern];
         } else {
             $url          = '';
             $patternParts = [];
+
             if (false === strpos($pattern, '{')) {
                 $patterns = explode('/', $pattern);
             } else {
                 $patterns = preg_split('#(?<!\^|\\\)/#', $pattern, -1, PREG_SPLIT_DELIM_CAPTURE);
             }
+
             foreach ($patterns as $uri) {
-                $url .= '/' . $uri;
-                $patternParts[] = '/' . trim($url, '/');
+                $url .= '/'.$uri;
+                $patternParts[] = '/'.trim($url, '/');
             }
+
             return $patternParts;
         }
     }
@@ -66,12 +92,13 @@ class Micro extends \Phalcon\Mvc\Micro
     /**
      * Handle the whole request
      *
-     * @param string uri
+     * @param  string  uri
      * @return mixed
      */
     public function handle($uri = null)
     {
         $dependencyInjector = $this->_dependencyInjector;
+
         if (false === is_object($dependencyInjector)) {
             throw new \Exception("A dependency injection container is required to access required micro services");
         }
@@ -82,7 +109,8 @@ class Micro extends \Phalcon\Mvc\Micro
 
             foreach ($router->getRoute() as $method => $_routes) {
                 foreach ($_routes as $url => $handler) {
-                    $p = parent::{$method}($url, $handler);
+                    $p = parent::{$method}
+                    ($url, $handler);
                 }
             }
 
@@ -95,8 +123,10 @@ class Micro extends \Phalcon\Mvc\Micro
                 if (!$handler) {
                     throw new \Exception("Matched route doesn't have an associated handler");
                 }
+
                 $this->_activeHandler = $handler;
                 $params               = [];
+
                 foreach ($matchedRoute->getPaths() as $name => $key) {
                     $params[$name] = $router->getMatches()[$key];
                 }
@@ -105,14 +135,17 @@ class Micro extends \Phalcon\Mvc\Micro
                 $parts  = $this->getPatternParts($matchedRoute);
 
                 $routeParam = $router->getParam();
+
                 foreach ($parts as $part) {
                     if (($_method = true === isset($routeParam['MAP'][$part]) ? 'MAP' : '')
                         || ($_method = true === isset($routeParam[$method][$part]) ? $method : '')
                     ) {
                         $check = $routeParam[$_method][$part];
+
                         foreach ($check as $k => $_handler) {
                             if (true === isset($params[$k])) {
                                 $status = $this->callHandler($_handler, [$params[$k]], 'param');
+
                                 if (false === $status) {
                                     return false;
                                 }
@@ -122,12 +155,14 @@ class Micro extends \Phalcon\Mvc\Micro
                 }
 
                 $routeBefore = $router->getBefore();
+
                 foreach ($parts as $part) {
                     if (($_method = true === isset($routeBefore['MAP'][$part]) ? 'MAP' : '')
                         || ($_method = true === isset($routeBefore[$method][$part]) ? $method : '')
                     ) {
                         $_handler = $routeBefore[$_method][$part];
                         $status   = $this->callHandler($_handler, $params, 'before');
+
                         if (false === $status) {
                             return false;
                         }
@@ -137,12 +172,14 @@ class Micro extends \Phalcon\Mvc\Micro
                 $returnedValue = $this->callHandler($handler, $params);
 
                 $routeAfter = $router->getAfter();
+
                 foreach ($parts as $part) {
                     if (($_method = true === isset($routeAfter['MAP'][$part]) ? 'MAP' : '')
                         || ($_method = true === isset($routeAfter[$method][$part]) ? $method : '')
                     ) {
                         $_handler = $routeAfter[$_method][$part];
                         $status   = $this->callHandler($_handler, $params, 'after');
+
                         if (false === $status) {
                             return false;
                         }
@@ -177,13 +214,19 @@ class Micro extends \Phalcon\Mvc\Micro
 
 class ChainingException extends \Exception
 {
+         /**
+     * @param $message
+     * @param $code
+     * @param \Exception $previous
+     */
     public function __construct($message = '', $code = 0, \Exception $previous = null)
     {
         $last = (debug_backtrace()[1]);
-        if ($last['class'] === 'Peanut\Phalcon\Mvc\Micro'
-            && true === in_array(strtoupper($last['function']), \Peanut\Phalcon\Mvc\Router::methods)) {
-            $message .= $last['function'] . '()은 methods()와 chaining될수 없습니다.' . PHP_EOL . 'in ' . $last['file'] . ', line ' . $last['line'];
+
+        if ('Peanut\Phalcon\Mvc\Micro' === $last['class'] && true === in_array(strtoupper($last['function']), \Peanut\Phalcon\Mvc\Router::methods)) {
+            $message .= $last['function'].'()은 methods()와 chaining될수 없습니다.'.PHP_EOL.'in '.$last['file'].', line '.$last['line'];
         }
+
         parent::__construct($message);
     }
 }

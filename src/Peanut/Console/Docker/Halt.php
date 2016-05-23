@@ -1,11 +1,10 @@
 <?php
-
 namespace Peanut\Console\Docker;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Halt extends Command
@@ -33,11 +32,16 @@ class Halt extends Command
             );
     }
 
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $name = $input->getArgument('name');
+
         if ($name) {
-            $text = 'Hello ' . $name;
+            $text = 'Hello '.$name;
         } else {
             $text = 'Hello';
         }

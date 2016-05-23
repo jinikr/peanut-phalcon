@@ -1,5 +1,4 @@
 <?php
-
 namespace Peanut\Console\Command;
 
 class Result

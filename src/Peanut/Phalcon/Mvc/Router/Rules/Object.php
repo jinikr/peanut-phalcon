@@ -1,34 +1,52 @@
 <?php
-
 namespace Peanut\Phalcon\Mvc\Router\Rules;
 
 class Object extends \Peanut\Phalcon\Mvc\Router
 {
+    /**
+     * @return mixed
+     */
     private function chainInit()
     {
         $this->methods = self::METHODS;
         $this->pattern = '';
+
         return $this;
     }
 
+    /**
+     * @param  $pattern
+     * @return mixed
+     */
     public function pattern($pattern)
     {
         $this->pattern = trim($pattern, '/');
+
         return $this;
     }
 
+    /**
+     * @param  array   $methods
+     * @return mixed
+     */
     public function methods($methods = [])
     {
         if (false === is_array($methods)) {
             $methods = func_get_args();
         }
+
         if (!$methods) {
             $methods = self::METHODS;
         }
+
         $this->methods = array_map('strtoupper', $methods);
+
         return $this;
     }
 
+    /**
+     * @param $callback
+     */
     public function group($callback)
     {
         if (func_num_args() === 2) {
@@ -36,6 +54,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         } else {
             $prefix = [];
         }
+
         if ($callback instanceof \Closure) {
             array_push($this->groupParts, $prefix);
             $callback = $callback->bindTo($this);
@@ -43,12 +62,17 @@ class Object extends \Peanut\Phalcon\Mvc\Router
             array_pop($this->groupParts);
         } else {
             $msg = debug_backtrace()[0];
-            $msg = 'Closure can\'t be loaded' . PHP_EOL . 'in ' . $msg['file'] . ', line ' . $msg['line'];
+            $msg = 'Closure can\'t be loaded'.PHP_EOL.'in '.$msg['file'].', line '.$msg['line'];
             throw new \Exception($msg);
         }
+
         //return $this;
     }
 
+    /**
+     * @param $handler
+     * @param $pattern
+     */
     public function get($handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -63,6 +87,10 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         $this->chainInit();
     }
 
+    /**
+     * @param $handler
+     * @param $pattern
+     */
     public function post($handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -77,6 +105,10 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         $this->chainInit();
     }
 
+    /**
+     * @param $handler
+     * @param $pattern
+     */
     public function put($handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -91,6 +123,10 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         $this->chainInit();
     }
 
+    /**
+     * @param $handler
+     * @param $pattern
+     */
     public function patch($handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -105,6 +141,10 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         $this->chainInit();
     }
 
+    /**
+     * @param $handler
+     * @param $pattern
+     */
     public function head($handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -119,6 +159,10 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         $this->chainInit();
     }
 
+    /**
+     * @param $handler
+     * @param $pattern
+     */
     public function options($handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -133,6 +177,10 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         $this->chainInit();
     }
 
+    /**
+     * @param $handler
+     * @param $pattern
+     */
     public function any($handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -142,9 +190,15 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         foreach ($this->methods as $method) {
             $this->routeHandler[$method][$this->getUri($pattern)] = $handler;
         }
+
         $this->chainInit();
     }
 
+    /**
+     * @param $param
+     * @param $handler
+     * @param $pattern
+     */
     public function param($param, $handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -154,9 +208,14 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         foreach ($this->methods as $method) {
             $this->paramHandler[$method][$this->getUri($pattern)][$param] = $handler;
         }
+
         $this->chainInit();
     }
 
+    /**
+     * @param $handler
+     * @param $pattern
+     */
     public function before($handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -166,9 +225,14 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         foreach ($this->methods as $method) {
             $this->beforeHandler[$method][$this->getUri($pattern)] = $handler;
         }
+
         $this->chainInit();
     }
 
+    /**
+     * @param $handler
+     * @param $pattern
+     */
     public function after($handler, $pattern = '')
     {
         if (func_num_args() === 2) {
@@ -178,19 +242,26 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         foreach ($this->methods as $method) {
             $this->afterHandler[$method][$this->getUri($pattern)] = $handler;
         }
+
         $this->chainInit();
     }
 }
 
 class ChainingException extends \Exception
 {
+    /**
+     * @param $message
+     * @param $code
+     * @param \Exception $previous
+     */
     public function __construct($message = '', $code = 0, \Exception $previous = null)
     {
         $last = (debug_backtrace()[1]);
-        if ($last['class'] === 'Peanut\Phalcon\Mvc\Micro'
-            && true === in_array(strtoupper($last['function']), \Peanut\Phalcon\Mvc\Router::METHODS)) {
-            $message .= $last['function'] . '()은 methods()와 chaining될수 없습니다.' . PHP_EOL . 'in ' . $last['file'] . ', line ' . $last['line'];
+
+        if ('Peanut\Phalcon\Mvc\Micro' === $last['class'] && true === in_array(strtoupper($last['function']), \Peanut\Phalcon\Mvc\Router::METHODS)) {
+            $message .= $last['function'].'()은 methods()와 chaining될수 없습니다.'.PHP_EOL.'in '.$last['file'].', line '.$last['line'];
         }
+
         parent::__construct($message);
     }
 }

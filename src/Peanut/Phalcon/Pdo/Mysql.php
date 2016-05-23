@@ -1,14 +1,19 @@
 <?php
-
 namespace Peanut\Phalcon\Pdo;
 
 class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 {
+    /**
+     * @var mixed
+     */
     public static $instance;
 
+    /**
+     * @param $descriptor
+     */
     public function connect($descriptor = null)
     {
-        if ($descriptor === null) {
+        if (null === $descriptor) {
             $descriptor = $this->_descriptor;
         }
 
@@ -37,6 +42,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
             if ($descriptor['persistent']) {
                 $options[\Pdo::ATTR_PERSISTENT] = true;
             }
+
             unset($descriptor['persistent']);
         }
 
@@ -48,10 +54,12 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
             $dsnAttributes = $descriptor['dsn'];
         } else {
             $dsnParts = [];
+
             foreach ($descriptor as $key => $value) {
-                $dsnParts[] = $key . '=' . $value;
+                $dsnParts[] = $key.'='.$value;
             }
-            $dsnAttributes = join(';', $dsnParts);
+
+            $dsnAttributes = implode(';', $dsnParts);
         }
 
         $options[\Pdo::ATTR_ERRMODE]            = \Pdo::ERRMODE_EXCEPTION;
@@ -62,6 +70,9 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         $this->_pdo = new \Pdo($dsnAttributes, $username, $password, $options);
     }
 
+    /**
+     * @param $name
+     */
     public static function name($name)
     {
         if (false === isset(self::$instance[$name])) {
@@ -77,12 +88,18 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
                 throw new \Exception($e->getMessage());
             }
         }
+
         return self::$instance[$name];
     }
 
+    /**
+     * @param  $params
+     * @return array
+     */
     public function getBindTypes($params)
     {
         $paramTypes = [];
+
         foreach ($params as $key => $param) {
             if (true === is_int($param)) {
                 $paramTypes[$key] = \Pdo::PARAM_INT;
@@ -93,12 +110,18 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
             } elseif (true === is_string($param)) {
                 $paramTypes[$key] = \Pdo::PARAM_STR;
             } else {
-                throw new \Exception(gettype($param) . ' not support');
+                throw new \Exception(gettype($param).' not support');
             }
         }
+
         return $paramTypes;
     }
 
+    /**
+     * @param $statement
+     * @param array        $bindParameters
+     * @param $mode
+     */
     public function gets($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
         try
@@ -109,6 +132,11 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
     }
 
+    /**
+     * @param $statement
+     * @param array        $bindParameters
+     * @param $mode
+     */
     public function get($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
         try
@@ -119,22 +147,34 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
     }
 
+    /**
+     * @param  $statement
+     * @param  array        $bindParameters
+     * @param  $mode
+     * @return mixed
+     */
     public function get1($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {
         try
         {
             $results = parent::fetchOne($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
+
             if (true === is_array($results)) {
                 foreach ($results as $result) {
                     return $result;
                 }
             }
+
             return $results;
         } catch (\PDOException $e) {
             throw $e;
         }
     }
 
+    /**
+     * @param $statement
+     * @param array        $bindParameters
+     */
     public function set($statement, $bindParameters = [])
     {
         try
@@ -145,20 +185,30 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         }
     }
 
+    /**
+     * @param $statement
+     * @param array        $bindParameters
+     */
     public function setId($statement, $bindParameters = [])
     {
         if (true === self::set($statement, $bindParameters)) {
             return parent::lastInsertId();
         }
+
         return false;
     }
 
+    /**
+     * @param  $callback
+     * @return mixed
+     */
     public function transaction(callable $callback)
     {
         try {
             parent::begin();
             $return = call_user_func($callback);
             parent::commit();
+
             return $return;
         } catch (\Throwable $e) {
             parent::rollback();

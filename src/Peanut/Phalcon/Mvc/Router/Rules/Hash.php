@@ -1,13 +1,16 @@
 <?php
-
 namespace Peanut\Phalcon\Mvc\Router\Rules;
 
 class Hash extends \Peanut\Phalcon\Mvc\Router
 {
+    /**
+     * @param $key
+     */
     private function getArgs($key)
     {
         if (1 === preg_match('#(?P<type>[^\s]+)(\s+(?P<left>.*))?(\s+(?P<center>.*))?(\s+(?P<right>.*))?#', $key, $matches)) {
             $type = strtolower($matches['type']);
+
             switch ($type) {
                 case 'param':
                     return [
@@ -36,6 +39,9 @@ class Hash extends \Peanut\Phalcon\Mvc\Router
         }
     }
 
+    /**
+     * @param $config
+     */
     public function group($config)
     {
         foreach ($config as $key => $value) {
@@ -48,23 +54,31 @@ class Hash extends \Peanut\Phalcon\Mvc\Router
                         break;
                     case 'param':
                         $url = $this->getUri($uri);
+
                         foreach ($methods as $method) {
-                            $this->{$type . 'Handler'}[$method][$url][$param] = $value;
+                            $this->{$type.'Handler'}
+                            [$method][$url][$param] = $value;
                         }
+
                         break;
                     case 'before':
                     case 'after':
                         $url = $this->getUri($uri);
+
                         foreach ($methods as $method) {
-                            $this->{$type . 'Handler'}[$method][$url] = $value;
+                            $this->{$type.'Handler'}
+                            [$method][$url] = $value;
                         }
+
                         break;
                     case 'any':
                     default:
                         $url = $this->getUri($uri);
+
                         foreach ($methods as $method) {
                             $this->routeHandler[$method][$url] = $value;
                         }
+
                         break;
                 }
             } else {

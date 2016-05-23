@@ -1,5 +1,4 @@
 <?php
-
 namespace Peanut\Console\Docker;
 
 use Symfony\Component\Console\Command\Command;
@@ -36,6 +35,7 @@ class Composer extends \Peanut\Console\Command
             } else {
                 $message = $this->command('docker exec -i $(docker ps -f name=php -q) sh -c  "cd /var/www/ && composer install --prefer-dist -vvv --profile"');
             }
+
             $this->writeln('└─ Ok');
         }
     }
