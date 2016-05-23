@@ -5,15 +5,14 @@ namespace Peanut\Console;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class Command extends \Symfony\Component\Console\Command\Command
 {
 
-    const v = OutputInterface::VERBOSITY_VERBOSE;
-    const vv = OutputInterface::VERBOSITY_VERY_VERBOSE;
-    const d = OutputInterface::VERBOSITY_DEBUG;
-    const n = OutputInterface::VERBOSITY_NORMAL;
+    const V = OutputInterface::VERBOSITY_VERBOSE;
+    const VV = OutputInterface::VERBOSITY_VERY_VERBOSE;
+    const D = OutputInterface::VERBOSITY_DEBUG;
+    const N = OutputInterface::VERBOSITY_NORMAL;
 
     public $input;
     public $output;
@@ -31,25 +30,23 @@ class Command extends \Symfony\Component\Console\Command\Command
         $timeout = 600;
         $command = str_replace(PHP_EOL, '', $command);
         if ($this->output->getVerbosity()) {
-            $this->output->writeln("Run: \e[1m".$command."\e[0m");
+            $this->output->writeln("Run: \e[1m" . $command . "\e[0m");
         }
 
         $process = new Process($command);
         $process->setTimeout($timeout);
-        if($input)
-        {
+        if ($input) {
             $process->setInput($input);
         }
-        $callback = function ($type, $buffer)
-        {
+        $callback = function ($type, $buffer) {
             if (OutputInterface::VERBOSITY_DEBUG <= $this->output->getVerbosity()) {
                 if (Process::ERR === $type) {
-                    $msg = implode(PHP_EOL,array_map(function ($line) {
-                        return "<fg=red>></fg=red> \033[1;30m".$line."\033[0m";
+                    $msg = implode(PHP_EOL, array_map(function ($line) {
+                        return "<fg=red>></fg=red> \033[1;30m" . $line . "\033[0m";
                     }, explode(PHP_EOL, trim($buffer))));
                 } else {
-                    $msg = implode(PHP_EOL,array_map(function ($line) {
-                        return "<info>></info> \033[1;30m".$line."\033[0m";
+                    $msg = implode(PHP_EOL, array_map(function ($line) {
+                        return "<info>></info> \033[1;30m" . $line . "\033[0m";
                     }, explode(PHP_EOL, trim($buffer))));
                 }
                 $this->output->write($msg, OutputInterface::OUTPUT_RAW);
@@ -61,12 +58,12 @@ class Command extends \Symfony\Component\Console\Command\Command
         if (!$process->isSuccessful() && $process->getErrorOutput()) {
             throw new \Peanut\Console\RuntimeException($process->getErrorOutput());
         }
-        return new \Peanut\Console\Command\Result($process->getErrorOutput().$process->getOutput());
+        return new \Peanut\Console\Command\Result($process->getErrorOutput() . $process->getOutput());
     }
 
     public function isFile($file)
     {
-        return $this->runLocal('if [ -f '.$file.' ]; then echo "true"; else echo "false"; fi')->toBool();
+        return $this->runLocal('if [ -f ' . $file . ' ]; then echo "true"; else echo "false"; fi')->toBool();
     }
 
     public function write($s)

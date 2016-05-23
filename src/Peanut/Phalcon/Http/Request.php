@@ -302,8 +302,7 @@ class Request extends \Phalcon\Http\Request
         $uri = trim($this->getDI()->get('router')->getRewriteUri(), '/');
 
         $segments = [];
-        if (false === empty($uri))
-        {
+        if (false === empty($uri)) {
             $segments = explode('/', $uri);
         }
         return $segments;

@@ -4,11 +4,6 @@ namespace Peanut\Console\Docker;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\InputStream;
 
 class Composer extends \Peanut\Console\Command
 {
@@ -31,7 +26,7 @@ class Composer extends \Peanut\Console\Command
         // config
         {
 
-            $machineName = strtolower('bootappV3');
+            //$machineName = strtolower('bootappV3');
             $options = $this->input->getArgument('options');
 
         }
@@ -41,16 +36,14 @@ class Composer extends \Peanut\Console\Command
 
             $this->writeln('<info>Php composer install</info>');
 
-            if('update' === $options)
-            {
+            if ('update' === $options) {
                 $message = $this->command('docker exec -i $(docker ps -f name=php -q) sh -c  "cd /var/www/ && composer update --prefer-dist -vvv --profile"');
-            }
-            else
-            {
+            } else {
                 $message = $this->command('docker exec -i $(docker ps -f name=php -q) sh -c  "cd /var/www/ && composer install --prefer-dist -vvv --profile"');
             }
             $this->writeln('└─ Ok');
 
         }
     }
+
 }

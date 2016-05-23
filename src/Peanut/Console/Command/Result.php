@@ -4,6 +4,7 @@ namespace Peanut\Console\Command;
 
 class Result
 {
+
     /**
      * @var string
      */
@@ -60,4 +61,5 @@ class Result
     {
         return explode("\n", $this->toString());
     }
+
 }

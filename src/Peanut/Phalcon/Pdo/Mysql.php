@@ -7,67 +7,50 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 
     public static $instance;
 
-    public function connect($descriptor = NULL)
+    public function connect($descriptor = null)
     {
-        if ($descriptor === null)
-        {
+        if ($descriptor === null) {
             $descriptor = $this->_descriptor;
         }
 
-        if (true === isset($descriptor['username']))
-        {
+        if (true === isset($descriptor['username'])) {
             $username = $descriptor['username'];
             unset($descriptor['username']);
-        }
-        else
-        {
+        } else {
             $username = null;
         }
 
-        if (true === isset($descriptor['password']))
-        {
+        if (true === isset($descriptor['password'])) {
             $password = $descriptor['password'];
             unset($descriptor['password']);
-        }
-        else
-        {
+        } else {
             $password = null;
         }
 
-        if (true === isset($descriptor['options']))
-        {
+        if (true === isset($descriptor['options'])) {
             $options = $descriptor['options'];
             unset($descriptor['options']);
-        }
-        else
-        {
+        } else {
             $options = [];
         }
 
-        if (true === isset($descriptor['persistent']))
-        {
-            if ($descriptor['persistent'])
-            {
+        if (true === isset($descriptor['persistent'])) {
+            if ($descriptor['persistent']) {
                 $options[\Pdo::ATTR_PERSISTENT] = true;
             }
             unset($descriptor['persistent']);
         }
 
-        if (true === isset($descriptor['dialectClass']))
-        {
+        if (true === isset($descriptor['dialectClass'])) {
             unset($descriptor['dialectClass']);
         }
 
-        if (true === isset($descriptor['dsn']))
-        {
+        if (true === isset($descriptor['dsn'])) {
             $dsnAttributes = $descriptor['dsn'];
-        }
-        else
-        {
+        } else {
             $dsnParts = [];
-            foreach($descriptor as $key => $value)
-            {
-               $dsnParts[] = $key . '=' . $value;
+            foreach ($descriptor as $key => $value) {
+                $dsnParts[] = $key . '=' . $value;
             }
             $dsnAttributes = join(';', $dsnParts);
         }
@@ -82,23 +65,16 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 
     public static function name($name)
     {
-        if (false === isset(self::$instance[$name]))
-        {
+        if (false === isset(self::$instance[$name])) {
             try
             {
                 $di = \Phalcon\Di::getDefault();
-                self::$instance[$name] = new Self ($di['databases'][$name]);
-            }
-            catch(\Phalcon\Di\Exception $e)
-            {
+                self::$instance[$name] = new Self($di['databases'][$name]);
+            } catch (\Phalcon\Di\Exception $e) {
                 throw $e;
-            }
-            catch(\PDOException $e)
-            {
+            } catch (\PDOException $e) {
                 throw $e;
-            }
-            catch (\Throwable $e)
-            {
+            } catch (\Throwable $e) {
                 throw new \Exception($e->getMessage());
             }
         }
@@ -118,7 +94,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
             } else if (true === is_string($param)) {
                 $paramTypes[$key] = \Pdo::PARAM_STR;
             } else {
-                throw new \Exception(gettype($param).' not support');
+                throw new \Exception(gettype($param) . ' not support');
             }
         }
         return $paramTypes;
@@ -129,9 +105,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         try
         {
             return parent::fetchAll($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
-        }
-        catch (\PDOException $e)
-        {
+        } catch (\PDOException $e) {
             throw $e;
         }
     }
@@ -141,9 +115,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         try
         {
             return parent::fetchOne($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
-        }
-        catch (\PDOException $e)
-        {
+        } catch (\PDOException $e) {
             throw $e;
         }
     }
@@ -153,17 +125,13 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         try
         {
             $results = parent::fetchOne($statement, $mode, $bindParameters, $this->getBindTypes($bindParameters));
-            if(true === is_array($results))
-            {
-                foreach($results as $result)
-                {
+            if (true === is_array($results)) {
+                foreach ($results as $result) {
                     return $result;
                 }
             }
             return $results;
-        }
-        catch (\PDOException $e)
-        {
+        } catch (\PDOException $e) {
             throw $e;
         }
     }
@@ -173,17 +141,14 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         try
         {
             return parent::execute($statement, $bindParameters, $this->getBindTypes($bindParameters));
-        }
-        catch (\PDOException $e)
-        {
+        } catch (\PDOException $e) {
             throw $e;
         }
     }
 
     public function setId($statement, $bindParameters = [])
     {
-        if (true === self::set($statement, $bindParameters))
-        {
+        if (true === self::set($statement, $bindParameters)) {
             return parent::lastInsertId();
         }
         return false;
@@ -196,9 +161,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
             $return = call_user_func($callback);
             parent::commit();
             return $return;
-        }
-        catch (\Throwable $e)
-        {
+        } catch (\Throwable $e) {
             parent::rollback();
             throw new \Exception($e->getMessage());
         }
