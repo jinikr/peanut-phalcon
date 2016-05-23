@@ -8,7 +8,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
      */
     private function chainInit()
     {
-        $this->methods = self::METHODS;
+        $this->methods = parent::getMethods();
         $this->pattern = '';
 
         return $this;
@@ -36,7 +36,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
         }
 
         if (!$methods) {
-            $methods = self::METHODS;
+            $methods = parent::getMethods();
         }
 
         $this->methods = array_map('strtoupper', $methods);
@@ -80,7 +80,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
             list($pattern, $handler) = func_get_args();
         }
 
-        if (self::METHODS !== $this->methods) {
+        if (parent::getMethods() !== $this->methods) {
             throw new ChainingException();
         }
 
@@ -98,7 +98,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
             list($pattern, $handler) = func_get_args();
         }
 
-        if (self::METHODS !== $this->methods) {
+        if (parent::getMethods() !== $this->methods) {
             throw new ChainingException();
         }
 
@@ -116,7 +116,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
             list($pattern, $handler) = func_get_args();
         }
 
-        if (self::METHODS !== $this->methods) {
+        if (parent::getMethods() !== $this->methods) {
             throw new ChainingException();
         }
 
@@ -134,7 +134,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
             list($pattern, $handler) = func_get_args();
         }
 
-        if (self::METHODS !== $this->methods) {
+        if (parent::getMethods() !== $this->methods) {
             throw new ChainingException();
         }
 
@@ -152,7 +152,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
             list($pattern, $handler) = func_get_args();
         }
 
-        if (self::METHODS !== $this->methods) {
+        if (parent::getMethods() !== $this->methods) {
             throw new ChainingException();
         }
 
@@ -170,7 +170,7 @@ class Object extends \Peanut\Phalcon\Mvc\Router
             list($pattern, $handler) = func_get_args();
         }
 
-        if (self::METHODS !== $this->methods) {
+        if (parent::getMethods() !== $this->methods) {
             throw new ChainingException();
         }
 

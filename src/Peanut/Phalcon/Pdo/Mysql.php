@@ -156,7 +156,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
      * @param  array           $bindParameters
      * @param  $mode
      * @throws \PDOException
-     * @return mixed
+     * @return string
      */
     public function get1($statement, $bindParameters = [], $mode = \Phalcon\Db::FETCH_ASSOC)
     {

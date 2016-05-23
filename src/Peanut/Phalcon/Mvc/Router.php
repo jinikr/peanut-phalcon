@@ -83,4 +83,12 @@ class Router extends \Phalcon\Mvc\Router
     {
         return $this->routeHandler;
     }
+
+    /**
+     * @return array
+     */
+    public function getMethods($name)
+    {
+        return self::METHODS;
+    }
 }
