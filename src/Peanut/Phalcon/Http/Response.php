@@ -4,7 +4,6 @@ namespace Peanut\Phalcon\Http;
 
 class Response extends \Phalcon\Http\Response
 {
-
     public function setJsonContent($content)
     {
         if (!parent::getHeaders()->get('Content-Type')) {
@@ -18,5 +17,4 @@ class Response extends \Phalcon\Http\Response
     {
         return json_decode(parent::getContent(), true);
     }
-
 }

@@ -4,14 +4,13 @@ namespace Peanut\Phalcon\Mvc;
 
 class Router extends \Phalcon\Mvc\Router
 {
-
-    const METHODS = ['POST', 'GET', 'PUT', 'PATCH', 'HEAD', 'DELETE', 'OPTIONS'];
-    protected $methods = self::METHODS;
-    protected $groupParts = [];
-    protected $paramHandler = [];
+    const METHODS            = ['POST', 'GET', 'PUT', 'PATCH', 'HEAD', 'DELETE', 'OPTIONS'];
+    protected $methods       = self::METHODS;
+    protected $groupParts    = [];
+    protected $paramHandler  = [];
     protected $beforeHandler = [];
-    protected $afterHandler = [];
-    protected $routeHandler = [];
+    protected $afterHandler  = [];
+    protected $routeHandler  = [];
 
     public function getUri($uri = '')
     {
@@ -47,5 +46,4 @@ class Router extends \Phalcon\Mvc\Router
     {
         return $this->routeHandler;
     }
-
 }

@@ -4,10 +4,9 @@ namespace Peanut\Bootstrap;
 
 class Yaml
 {
-
     public $di;
     public $stageName = '';
-    public $debug = false;
+    public $debug     = false;
 
     public function __construct(\Phalcon\DI\FactoryDefault $di)
     {
@@ -161,13 +160,13 @@ class Yaml
     public function initDatabase($config)
     {
         $stageName = $this->stageName;
-        $debug = $this->debug;
+        $debug     = $this->debug;
 
-        $database = $config['stages'][$stageName]['services']['mysql'];
+        $database              = $config['stages'][$stageName]['services']['mysql'];
         $this->di['databases'] = function () use ($database, $debug) {
             if (true === isset($database) && true === is_array($database)) {
                 $databaseConfig = [];
-                $serverList = $database['server'];
+                $serverList     = $database['server'];
                 unset($database['server']);
                 foreach ($serverList as $server => $dsn) {
                     $databaseConfig[$server] = array_merge(['dsn' => $dsn], $database);
@@ -185,7 +184,7 @@ class Yaml
     public function initEnvironment($config)
     {
         $host = $this->getHttpHost();
-        $env = '';
+        $env  = '';
         foreach ($config['stages'] as $stageName => $stage) {
             foreach ($stage['services']['nginx']['vhosts'] as $vhost) {
                 if (true === in_array($host, array_merge([$vhost['server_name']], $vhost['server_alias']))) {
@@ -221,5 +220,4 @@ class Yaml
             return $router;
         };
     }
-
 }

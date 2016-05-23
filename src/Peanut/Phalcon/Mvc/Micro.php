@@ -4,7 +4,6 @@ namespace Peanut\Phalcon\Mvc;
 
 class Micro extends \Phalcon\Mvc\Micro
 {
-
     private $instance = [];
     private $pattern;
 
@@ -20,7 +19,7 @@ class Micro extends \Phalcon\Mvc\Micro
     {
         if (true === is_callable($handler)) {
             $status = call_user_func_array($handler, $args);
-        } else if (true === is_string($handler)) {
+        } elseif (true === is_string($handler)) {
             if (false !== strpos($handler, '->')) {
                 $tmp = explode('->', $handler);
                 try {
@@ -49,7 +48,7 @@ class Micro extends \Phalcon\Mvc\Micro
         if ($pattern == '/') {
             return [$pattern];
         } else {
-            $url = '';
+            $url          = '';
             $patternParts = [];
             if (false === strpos($pattern, '{')) {
                 $patterns = explode('/', $pattern);
@@ -72,7 +71,6 @@ class Micro extends \Phalcon\Mvc\Micro
      */
     public function handle($uri = null)
     {
-
         $dependencyInjector = $this->_dependencyInjector;
         if (false === is_object($dependencyInjector)) {
             throw new \Exception("A dependency injection container is required to access required micro services");
@@ -80,7 +78,7 @@ class Micro extends \Phalcon\Mvc\Micro
 
         try {
             $returnedValue = null;
-            $router = $dependencyInjector->getShared("router");
+            $router        = $dependencyInjector->getShared("router");
 
             foreach ($router->getRoute() as $method => $_routes) {
                 foreach ($_routes as $url => $handler) {
@@ -98,13 +96,13 @@ class Micro extends \Phalcon\Mvc\Micro
                     throw new \Exception("Matched route doesn't have an associated handler");
                 }
                 $this->_activeHandler = $handler;
-                $params = [];
+                $params               = [];
                 foreach ($matchedRoute->getPaths() as $name => $key) {
                     $params[$name] = $router->getMatches()[$key];
                 }
 
                 $method = $this->request->getMethod();
-                $parts = $this->getPatternParts($matchedRoute);
+                $parts  = $this->getPatternParts($matchedRoute);
 
                 $routeParam = $router->getParam();
                 foreach ($parts as $part) {
@@ -118,8 +116,8 @@ class Micro extends \Phalcon\Mvc\Micro
                                 if (false === $status) {
                                     return false;
                                 }
-                            };
-                        };
+                            }
+                        }
                     }
                 }
 
@@ -129,7 +127,7 @@ class Micro extends \Phalcon\Mvc\Micro
                         || ($_method = true === isset($routeBefore[$method][$part]) ? $method : '')
                     ) {
                         $_handler = $routeBefore[$_method][$part];
-                        $status = $this->callHandler($_handler, $params, 'before');
+                        $status   = $this->callHandler($_handler, $params, 'before');
                         if (false === $status) {
                             return false;
                         }
@@ -144,7 +142,7 @@ class Micro extends \Phalcon\Mvc\Micro
                         || ($_method = true === isset($routeAfter[$method][$part]) ? $method : '')
                     ) {
                         $_handler = $routeAfter[$_method][$part];
-                        $status = $this->callHandler($_handler, $params, 'after');
+                        $status   = $this->callHandler($_handler, $params, 'after');
                         if (false === $status) {
                             return false;
                         }
@@ -163,7 +161,7 @@ class Micro extends \Phalcon\Mvc\Micro
                     && !($returnedValue instanceof \Phalcon\Http\ResponseInterface)) {
                     throw $e;
                 }
-            } else if (false !== $returnedValue) {
+            } elseif (false !== $returnedValue) {
                 throw $e;
             }
         }
@@ -175,12 +173,10 @@ class Micro extends \Phalcon\Mvc\Micro
 
         return $returnedValue;
     }
-
 }
 
 class ChainingException extends \Exception
 {
-
     public function __construct($message = '', $code = 0, \Exception $previous = null)
     {
         $last = (debug_backtrace()[1]);

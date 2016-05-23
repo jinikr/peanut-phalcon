@@ -7,7 +7,6 @@ use Symfony\Component\Console\Input\InputArgument;
 
 class Up extends \Peanut\Console\Command
 {
-
     protected function configure()
     {
         $this
@@ -17,17 +16,15 @@ class Up extends \Peanut\Console\Command
                 'enviroment',
                 InputArgument::REQUIRED,
                 'enviroment [ local | development | staging | production ]'
-            )
-        ;
+            );
     }
 
     public function exec()
     {
         // config
         {
-
-            $enviroment = $this->input->getArgument('enviroment');
-            $config = yaml_parse_file(getcwd() . '/env.yml');
+            $enviroment  = $this->input->getArgument('enviroment');
+            $config      = yaml_parse_file(getcwd() . '/env.yml');
             $projectName = $config['project'];
             $machineName = 'apiserver';
             strtolower($projectName);
@@ -40,52 +37,55 @@ class Up extends \Peanut\Console\Command
                     $alias = [];
                 }
                 $serverConfig[] = [
-                    'server_name' => array_merge([$value['server_name']], $alias),
+                    'server_name'   => array_merge([$value['server_name']], $alias),
                     'document_root' => $value['document_root'],
-                    'port' => $value['port'],
+                    'port'          => $value['port']
                 ];
             }
 
             $_bootappconf = file_get_contents(getcwd() . '/.docker/nginx/bootapp.conf.tmpl');
-            $nginx = '';
+            $nginx        = '';
             foreach ($serverConfig as $key => $value) {
                 $nginx .= strtr($_bootappconf, [
-                    '{{project}}' => $projectName . '-' . $value['server_name'][0],
+                    '{{project}}'       => $projectName . '-' . $value['server_name'][0],
                     '{{document_root}}' => $value['document_root'],
-                    '{{server_name}}' => implode(' ', $value['server_name']),
+                    '{{server_name}}'   => implode(' ', $value['server_name'])
                 ]);
             }
             file_put_contents(getcwd() . '/.docker/nginx/bootapp.conf', $nginx);
 
             $_dockerfile = file_get_contents(getcwd() . '/.docker/nginx/Dockerfile.tmpl');
-            $dockerfile = strtr($_dockerfile, [
-                '{{php-server}}' => $projectName . '-' . 'php-fpm',
+            $dockerfile  = strtr($_dockerfile, [
+                '{{php-server}}' => $projectName . '-' . 'php-fpm'
             ]);
             file_put_contents(getcwd() . '/.docker/nginx/Dockerfile', $dockerfile);
 
             $_php = file_get_contents(getcwd() . '/.docker/php-fpm/bootapp.pool.conf.tmpl');
-            $php = strtr($_php, [
-                '{{project}}' => $projectName,
+            $php  = strtr($_php, [
+                '{{project}}' => $projectName
             ])
                 . PHP_EOL . 'env[ENVIRONMENT] = ' . $enviroment
-                . PHP_EOL . 'env[PROJECT_NAME] = ' . $projectName
-            ;
+                . PHP_EOL . 'env[PROJECT_NAME] = ' . $projectName;
             file_put_contents(getcwd() . '/.docker/php-fpm/bootapp.pool.conf', $php);
 
             //$_compose = file_get_contents(getcwd() . '/docker-compose.yml.tmpl');
 
             $compose = [
-                'version' => "2",
+                'version'  => "2",
                 'services' => [
                     $projectName . '-' . 'application' => [
-                        'image' => 'busybox',
+                        'image'   => 'busybox',
                         'volumes' => ['.:/var/www'],
-                        'tty' => true,
-                    ],
-                ],
+                        'tty'     => true
+                    ]
+                ]
             ];
             $sed = $config['stages'][$enviroment]['services'];
             unset($sed['php-fpm'], $sed['nginx'], $sed['mysql']);
+            $tmp = function ($serviceName) use ($config) {
+                return $projectName . '-' . $serviceName;
+            };
+
             $servicesNames = array_map(function ($serviceName) use ($config) {
                 return $projectName . '-' . $serviceName;
             }, array_keys($sed));
@@ -93,41 +93,41 @@ class Up extends \Peanut\Console\Command
             foreach ($config['stages'][$enviroment]['services'] as $key => $value) {
                 if ($key == 'nginx') {
                     $compose['services'][$projectName . '-' . $key] = [
-                        'build' => './.docker/nginx',
-                        'expose' => ['80'],
-                        'links' => [$projectName . '-' . 'php-fpm'],
+                        'build'        => './.docker/nginx',
+                        'expose'       => ['80'],
+                        'links'        => [$projectName . '-' . 'php-fpm'],
                         'volumes_from' => [$projectName . '-' . 'application'],
-                        'volumes' => ['./var/log:/var/log/nginx'],
-                        'environment' => [
-                            'project-name' => $projectName,
-                        ],
+                        'volumes'      => ['./var/log:/var/log/nginx'],
+                        'environment'  => [
+                            'project-name' => $projectName
+                        ]
                     ];
-                } else if ($key == 'php-fpm') {
+                } elseif ($key == 'php-fpm') {
                     $compose['services'][$projectName . '-' . $key] = [
-                        'build' => './.docker/php-fpm',
-                        'expose' => ['9000'],
-                        'links' => $servicesNames,
+                        'build'        => './.docker/php-fpm',
+                        'expose'       => ['9000'],
+                        'links'        => $servicesNames,
                         'volumes_from' => [$projectName . '-' . 'application'],
-                        'volumes' => ['./var/log:/var/log'],
-                        'environment' => [
-                            'project-name' => $projectName,
-                        ],
+                        'volumes'      => ['./var/log:/var/log'],
+                        'environment'  => [
+                            'project-name' => $projectName
+                        ]
                     ];
-                } else if ($key == 'mysql') {
+                } elseif ($key == 'mysql') {
                     foreach ($value['server'] as $name => $dsn) {
                         $tmp = explode(':', $dsn);
                         parse_str(str_replace(';', '&', $tmp[1]), $p);
                         $p = array_merge(['prefix' => $tmp[0]], $p);
 
                         $compose['services'][$projectName . '-' . $p['host']] = [
-                            'image' => 'mysql',
-                            'expose' => ['3306'],
+                            'image'       => 'mysql',
+                            'expose'      => ['3306'],
                             'environment' => [
                                 'MYSQL_ROOT_PASSWORD' => $value['root_password'],
-                                'MYSQL_DATABASE' => $p['dbname'],
-                                'MYSQL_USER' => $value['username'],
-                                'MYSQL_PASSWORD' => $value['password'],
-                            ],
+                                'MYSQL_DATABASE'      => $p['dbname'],
+                                'MYSQL_USER'          => $value['username'],
+                                'MYSQL_PASSWORD'      => $value['password']
+                            ]
                         ];
                     }
                 }
@@ -143,7 +143,6 @@ class Up extends \Peanut\Console\Command
 
         // osx인지 확인, docker, vbox, docker-machine, docker-compose 설치 확인
         {
-
             $this->writeln('<info>Initializing docker-machine</info>');
 
             // osx
@@ -168,7 +167,7 @@ class Up extends \Peanut\Console\Command
             }
             $this->writeln('└─ Docker toolbox Ready!');
 
-            $dockerBinary = $this->command('which docker')->toString();
+            $dockerBinary  = $this->command('which docker')->toString();
             $composeBinary = $this->command('which docker-compose')->toString();
 
             //osx 에 설치하면 compose관리 가능한데 추천하지 않음.
@@ -176,12 +175,10 @@ class Up extends \Peanut\Console\Command
             //brew install php56-phalcon
             //brew install php56
             //brew install php56-yaml
-
         }
 
         // docker
         {
-
             $dockerExists = $this->command($machineBinary . ' status ' . $machineName . ' 2> /dev/null || echo ""')->toString();
             if ('Stopped' === $dockerExists) {
                 $this->writeln('└─ Docker is exist!');
@@ -190,21 +187,21 @@ class Up extends \Peanut\Console\Command
                 $this->command($machineBinary . ' start ' . $machineName);
                 $this->command($machineBinary . ' regenerate-certs ' . $machineName, 'y');
                 $this->writeln('└─ Docker is up and running!');
-            } else if ('Saved' === $dockerExists) {
+            } elseif ('Saved' === $dockerExists) {
                 $this->writeln('└─ Docker is exist!');
                 $this->writeln('');
                 $this->writeln("<info>Starting docker-machine</info>");
                 $this->command($machineBinary . ' start ' . $machineName);
                 $this->command($machineBinary . ' regenerate-certs ' . $machineName, 'y');
                 $this->writeln('└─ Docker is up and running!');
-            } else if ('Error' === $dockerExists) {
+            } elseif ('Error' === $dockerExists) {
                 $this->writeln('└─ Docker is exist!');
                 $this->writeln('');
                 $this->writeln("<info>Starting docker-machine</info>");
                 $this->command($machineBinary . ' rm -f ' . $machineName);
                 $this->command($machineBinary . ' create --driver virtualbox --virtualbox-memory 2048 ' . $machineName);
                 $this->writeln('└─ Docker is up and running!');
-            } else if ('Running' === $dockerExists) {
+            } elseif ('Running' === $dockerExists) {
                 $this->writeln('└─ Docker is up and running!');
             } else {
                 $this->writeln('');
@@ -219,12 +216,10 @@ class Up extends \Peanut\Console\Command
                     $this->writeln('PUTENV: ' . $match['key'] . '=' . $match['value']);
                 }
             }
-
         }
 
         // compose up
         {
-
             $this->writeln('');
             $this->writeln('<info>Docker compose</info>');
 
@@ -238,12 +233,10 @@ class Up extends \Peanut\Console\Command
             } else {
                 $networkName = $machineName . '_' . 'default';
             }
-
         }
 
         // route 설정
         {
-
             // docker machine ip
             $this->writeln('');
             $this->writeln('<info>Check docker-machine IP</info>');
@@ -260,12 +253,10 @@ class Up extends \Peanut\Console\Command
             $this->writeln('└─ Ok');
             $message = $this->command('sudo route -n add ' . $containerSubnet . ' ' . $dockerMachineIp);
             $this->writeln('└─ Ok');
-
         }
 
         // hosts 설정
         {
-
             $svrs = [];
             foreach ($serverConfig as $v) {
                 foreach ($v['server_name'] as $server) {
@@ -282,26 +273,24 @@ class Up extends \Peanut\Console\Command
                     continue;
                 }
                 if (1 === preg_match('#([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})#', $value, $match)) {
-                    $ip = $match[1];
+                    $ip      = $match[1];
                     $message = $this->command('sudo sed -i -e "/' . $ip . '/d" /etc/hosts');
                     if (false !== strpos($value, 'nginx')) {
                         foreach ($svrs as $server) {
                             $message = $this->command('sudo sed -i -e "/' . $server . '/d" /etc/hosts');
                             $message = $this->command('sudo -- sh -c -e "echo \'' . $ip . ' ' . $server . '\' >> /etc/hosts";');
                         }
-                    } else if (false !== strpos($value, 'mysql')) {
+                    } elseif (false !== strpos($value, 'mysql')) {
                         preg_match('#([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})#', $value, $match);
                         $message = $this->command('sudo -- sh -c -e "echo \'' . $ip . ' ' . $server . '\' >> /etc/hosts";');
                     }
                 }
             }
             $this->writeln('└─ Ok');
-
         }
 
         // compose install
         {
-
             $chk = $this->command('if [ -d vendor ]; then echo "true"; else echo "false"; fi')->toBool();
             //if(false === $chk)
             {
@@ -316,8 +305,6 @@ class Up extends \Peanut\Console\Command
                     $this->writeln('└─ Ok');
                 }
             }
-
         }
     }
-
 }

@@ -4,7 +4,6 @@ namespace Peanut\Bootstrap;
 
 class Basic
 {
-
     private $di;
 
     public function __construct(\Phalcon\DI\FactoryDefault $di)
@@ -173,5 +172,4 @@ class Basic
             throw new \Exception(__BASE__ . '/app/config/route.php 을 확인하세요.');
         }
     }
-
 }

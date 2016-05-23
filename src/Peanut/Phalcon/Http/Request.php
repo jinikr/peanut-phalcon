@@ -4,7 +4,6 @@ namespace Peanut\Phalcon\Http;
 
 class Request extends \Phalcon\Http\Request
 {
-
     /**
      * Sets request raw body
      *
@@ -307,5 +306,4 @@ class Request extends \Phalcon\Http\Request
         }
         return $segments;
     }
-
 }

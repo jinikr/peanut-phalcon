@@ -8,18 +8,17 @@ use Symfony\Component\Process\Process;
 
 class Command extends \Symfony\Component\Console\Command\Command
 {
-
-    const V = OutputInterface::VERBOSITY_VERBOSE;
+    const V  = OutputInterface::VERBOSITY_VERBOSE;
     const VV = OutputInterface::VERBOSITY_VERY_VERBOSE;
-    const D = OutputInterface::VERBOSITY_DEBUG;
-    const N = OutputInterface::VERBOSITY_NORMAL;
+    const D  = OutputInterface::VERBOSITY_DEBUG;
+    const N  = OutputInterface::VERBOSITY_NORMAL;
 
     public $input;
     public $output;
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->input = $input;
+        $this->input  = $input;
         $this->output = $output;
         return $this->exec();
         exit();
@@ -75,5 +74,4 @@ class Command extends \Symfony\Component\Console\Command\Command
     {
         return $this->output->writeln($s);
     }
-
 }

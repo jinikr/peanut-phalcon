@@ -4,7 +4,6 @@ namespace Peanut\Phalcon\Pdo;
 
 class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 {
-
     public static $instance;
 
     public function connect($descriptor = null)
@@ -55,9 +54,9 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
             $dsnAttributes = join(';', $dsnParts);
         }
 
-        $options[\Pdo::ATTR_ERRMODE] = \Pdo::ERRMODE_EXCEPTION;
-        $options[\Pdo::ATTR_EMULATE_PREPARES] = false;
-        $options[\Pdo::ATTR_STRINGIFY_FETCHES] = false;
+        $options[\Pdo::ATTR_ERRMODE]            = \Pdo::ERRMODE_EXCEPTION;
+        $options[\Pdo::ATTR_EMULATE_PREPARES]   = false;
+        $options[\Pdo::ATTR_STRINGIFY_FETCHES]  = false;
         $options[\Pdo::ATTR_DEFAULT_FETCH_MODE] = \Pdo::FETCH_ASSOC;
 
         $this->_pdo = new \Pdo($dsnAttributes, $username, $password, $options);
@@ -68,7 +67,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         if (false === isset(self::$instance[$name])) {
             try
             {
-                $di = \Phalcon\Di::getDefault();
+                $di                    = \Phalcon\Di::getDefault();
                 self::$instance[$name] = new Self($di['databases'][$name]);
             } catch (\Phalcon\Di\Exception $e) {
                 throw $e;
@@ -87,11 +86,11 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         foreach ($params as $key => $param) {
             if (true === is_int($param)) {
                 $paramTypes[$key] = \Pdo::PARAM_INT;
-            } else if (true === is_bool($param)) {
+            } elseif (true === is_bool($param)) {
                 $paramTypes[$key] = \Pdo::PARAM_BOOL;
-            } else if (true === is_null($param)) {
+            } elseif (true === is_null($param)) {
                 $paramTypes[$key] = \Pdo::PARAM_NULL;
-            } else if (true === is_string($param)) {
+            } elseif (true === is_string($param)) {
                 $paramTypes[$key] = \Pdo::PARAM_STR;
             } else {
                 throw new \Exception(gettype($param) . ' not support');
@@ -166,5 +165,4 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
             throw new \Exception($e->getMessage());
         }
     }
-
 }

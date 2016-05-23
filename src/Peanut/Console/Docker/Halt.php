@@ -10,11 +10,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class Halt extends Command
 {
-
-    const V = OutputInterface::VERBOSITY_VERBOSE;
-    const VV = OutputInterface::VERBOSITY_VERY_VERBOSE;
+    const V   = OutputInterface::VERBOSITY_VERBOSE;
+    const VV  = OutputInterface::VERBOSITY_VERY_VERBOSE;
     const VVV = OutputInterface::VERBOSITY_DEBUG;
-    const N = OutputInterface::VERBOSITY_NORMAL;
+    const N   = OutputInterface::VERBOSITY_NORMAL;
 
     protected function configure()
     {
@@ -31,9 +30,7 @@ class Halt extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'If set, the task will yell in uppercase letters'
-            )
-        ;
-
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -51,5 +48,4 @@ class Halt extends Command
 
         $output->writeln($text);
     }
-
 }

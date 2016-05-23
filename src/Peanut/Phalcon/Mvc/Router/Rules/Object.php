@@ -4,7 +4,6 @@ namespace Peanut\Phalcon\Mvc\Router\Rules;
 
 class Object extends \Peanut\Phalcon\Mvc\Router
 {
-
     private function chainInit()
     {
         $this->methods = self::METHODS;
@@ -201,85 +200,85 @@ class ChainingException extends \Exception
 $router = new \Peanut\Phalcon\Mvc\Router\RulesObject;
 $router->group('huga', function() use ($router)
 {
-$router->before(function()
-{
-echo 'huga before';
-});
-$router->get(function()
-{
-echo 'huga index page';
-});
-$router->get('{name}', function($name)
-{
-echo $name;
-});
-$router->get('view/{view_id:[0-9]+}', function()
-{
+    $router->before(function()
+    {
+        echo 'huga before';
+    });
+    $router->get(function()
+    {
+        echo 'huga index page';
+    });
+    $router->get('{name}', function($name)
+    {
+        echo $name;
+    });
+    $router->get('view/{view_id:[0-9]+}', function()
+    {
 
-});
-$router->get('write', function()
-{
+    });
+    $router->get('write', function()
+    {
 
-});
-$router->after(function() {
-echo 'huga after';
-});
+    });
+    $router->after(function() {
+        echo 'huga after';
+    });
 });
 $router->group('board', function() use ($router)
 {
-$router->before(function()
-{
-echo 'board before';
-});
-$router->get(function()
-{
-echo 'board index page';
-});
-$router->group('{board_id:[a-z0-9A-Z]+}', function() use ($router)
-{
-$router->param('board_id', function($boardId)
-{
-$this->board = $boardId;
-echo 'board id : ' .$boardId;
-});
-$router->param('view_id', function($viewId)
-{
-$this->view = $viewId;
-echo 'view id : ' .$viewId;
-});
-$router->get(function($boardId)
-{
-echo 'board index page <b>'.$boardId.'</b>';
-});
-$router->get('add', function($board)
-{
-echo 'add '.($this->board === $board ? $board : false);
-});
-$router->get('view/{view_id:[0-9]+}', function($boardId, $viewId)
-{
-echo '<hr />';
-echo $viewId;
-echo '<hr />';
-});
-$router->get('write', function()
-{
+    $router->before(function()
+    {
+        echo 'board before';
+    });
+    $router->get(function()
+    {
+        echo 'board index page';
+    });
+    $router->group('{board_id:[a-z0-9A-Z]+}', function() use ($router)
+    {
+        $router->param('board_id', function($boardId)
+        {
+            $this->board = $boardId;
+            echo 'board id : ' .$boardId;
+        });
+        $router->param('view_id', function($viewId)
+        {
+            $this->view = $viewId;
+            echo 'view id : ' .$viewId;
+        });
+        $router->get(function($boardId)
+        {
+            echo 'board index page <b>'.$boardId.'</b>';
+        });
+        $router->get('add', function($board)
+        {
+            echo 'add '.($this->board === $board ? $board : false);
+        });
+        $router->get('view/{view_id:[0-9]+}', function($boardId, $viewId)
+        {
+            echo '<hr />';
+            echo $viewId;
+            echo '<hr />';
+        });
+        $router->get('write', function()
+        {
 
-});
-});
-$router->after(function()
-{
-echo 'board after';
-});
+        });
+    });
+    $router->after(function()
+    {
+        echo 'board after';
+    });
 });
 $router->get('info', function()
 {
-phpinfo();
+    phpinfo();
 });
 $router->get(function()
 {
-echo '/';
+    echo '/';
 });
 
 return $router;
 
- */
+*/

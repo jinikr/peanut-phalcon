@@ -7,7 +7,6 @@ use Symfony\Component\Console\Input\InputArgument;
 
 class Composer extends \Peanut\Console\Command
 {
-
     protected function configure()
     {
         $this
@@ -17,23 +16,19 @@ class Composer extends \Peanut\Console\Command
                 'options',
                 InputArgument::REQUIRED,
                 'install | update'
-            )
-        ;
+            );
     }
 
     public function exec()
     {
         // config
         {
-
             //$machineName = strtolower('bootappV3');
             $options = $this->input->getArgument('options');
-
         }
 
         // compose install
         {
-
             $this->writeln('<info>Php composer install</info>');
 
             if ('update' === $options) {
@@ -42,8 +37,6 @@ class Composer extends \Peanut\Console\Command
                 $message = $this->command('docker exec -i $(docker ps -f name=php -q) sh -c  "cd /var/www/ && composer install --prefer-dist -vvv --profile"');
             }
             $this->writeln('└─ Ok');
-
         }
     }
-
 }
