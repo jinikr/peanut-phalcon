@@ -96,9 +96,14 @@ class Compiler
 
             return '###2413###'.$i.'###2413###';
         }, $source);
-//pr($source);
 
-        $tokens     = preg_split('/('.$php_tag.'<!--{(?!`)|(?<!`)}-->|{(?!`)|(?<!`)})/i', $source, -1, PREG_SPLIT_DELIM_CAPTURE);
+        /*
+            // {{를 쓰는 다른 템플릿과 구분을 위해서, 대신 {test}와 같은 표현을 하기 위해
+            // {{=test}}와 같은 구문을 사용할수 없다. 일단 제외
+            //$tokens     = preg_split('/('.$php_tag.'<!--{?{(?!`)|(?<!`)}?}-->|{?{(?!`)|(?<!`)}?})/i', $source, -1, PREG_SPLIT_DELIM_CAPTURE);
+        */
+        $tokens = preg_split('/('.$php_tag.'<!--{(?!`)|(?<!`)}-->|{(?!`)|(?<!`)})/i', $source, -1, PREG_SPLIT_DELIM_CAPTURE);
+
         $line       = 0;
         $is_open    = 0;
         $new_tokens = [];
@@ -144,8 +149,8 @@ class Compiler
 
                     $result = $this->compileStatement($tokens[$_index - 1], $line);
 
-                    if (1 == $result[0]) {
-                        $new_tokens[$_index - 1] = $result[1];
+                    if (1 == $result[0] || false === $result[1]) {
+                        $new_tokens[$_index - 1] = $tokens[$_index - 1];
                     } elseif (2 == $result[0]) {
                         $new_tokens[$is_open]    = '<?php ';
                         $new_tokens[$_index - 1] = $result[1];
@@ -226,7 +231,12 @@ class Compiler
                     $result        = [2, $this->compileLoop($statement, $line)];
                     break;
                 case '#':
-                    $result = [2, $this->compileDefine($statement, $line)];
+                    if (1 === preg_match('`^#([\s+])?([a-zA-Z0-9\-_\.]+)$`', $statement)) {
+                        $result = [2, $this->compileDefine($statement, $line)];
+                    } else {
+                        $result = [1, $statement];
+                    }
+
                     break;
                 case ':':
                     if (!count($this->brace)) {
@@ -307,7 +317,7 @@ class Compiler
      */
     public function compileDefine($statement, $line)
     {
-        return "echo self::show('".substr($statement, 1)."')";
+        return "echo self::show('".trim(substr($statement, 1))."')";
     }
 
     /**
@@ -343,8 +353,7 @@ class Compiler
         $loopKeyName    = '$_k'.$loopKey;
         $loop_ValueName = '$_j'.$loopKey;
 
-        return;
-        $loopArrayName.'='.$array.';'
+        return $loopArrayName.'='.$array.';'
             .$loopIndexName.'=-1;'
             .'if(is_array('.$loopArrayName.')&&('.$loopSizeName.'=count('.$loopArrayName.'))'.'){'
             .'foreach('.$loopArrayName.' as '.$loopKeyName.'=>'.$loopValueName.'){'
@@ -375,7 +384,13 @@ class Compiler
      */
     public function compileEcho($statement, $line)
     {
-        return 'echo '.$this->tokenizer(substr($statement, 1), $line).';';
+        $result = $this->tokenizer(substr($statement, 1), $line);
+
+        if (false === $result) {
+            return false;
+        } else {
+            return 'echo '.$result.';';
+        }
     }
 
     /**
@@ -384,7 +399,7 @@ class Compiler
      */
     public function compileElse($statement, $line)
     {
-        return '}else{'.$this->tokenizer(substr($statement, 1), $line);
+        return '}}else{{'.$this->tokenizer(substr($statement, 1), $line);
     }
 
     /**
@@ -393,7 +408,7 @@ class Compiler
      */
     public function compileElseif($statement, $line)
     {
-        return '}else if('.$this->tokenizer(substr($statement, 2), $line).'){';
+        return '}}else if('.$this->tokenizer(substr($statement, 2), $line).'){{';
     }
 
     /**
@@ -402,7 +417,7 @@ class Compiler
      */
     public function compileClose($statement, $line)
     {
-        return '}'.$this->tokenizer(substr($statement, 1), $line);
+        return '}}'.$this->tokenizer(substr($statement, 1), $line);
     }
 
     /**
@@ -411,7 +426,7 @@ class Compiler
      */
     public function compileCloseIf($statement, $line)
     {
-        return '}'.$this->tokenizer(substr($statement, 2), $line);
+        return '}}'.$this->tokenizer(substr($statement, 2), $line);
     }
 
     /**
@@ -420,7 +435,7 @@ class Compiler
      */
     public function compileCloseLoop($statement, $line)
     {
-        return '}'.$this->tokenizer(substr($statement, 2), $line);
+        return '}}'.$this->tokenizer(substr($statement, 2), $line);
     }
 
     /**
@@ -484,10 +499,6 @@ class Compiler
                 }
             }
 
-            if ('semi_colon' == $r['name']) {
-                return false;
-            }
-
             if ('whitespace' != $r['name'] && 'enter' != $r['name']) {
                 $token[] = $r;
             }
@@ -499,6 +510,10 @@ class Compiler
         $org    = '';
 
         foreach ($token as $key => &$current) {
+            if ('semi_colon' == $current['name']) {
+                return false;
+            }
+
             $current['key'] = $key;
 
             if (true === isset($token[$key - 1])) {
@@ -518,12 +533,14 @@ class Compiler
 // 마지막이 종결되지 않음
             if (!$next['name'] && false === in_array($current['name'], ['string', 'number', 'string_number', 'right_bracket', 'right_parenthesis', 'double_operator', 'quote'])) {
                 //pr($current);
+                return false;
                 throw new compiler\exception('parse error : line '.$line.' '.$current['org']);
             }
 
             switch ($current['name']) {
                 case 'string':
                     if (false === in_array($prev['name'], ['', 'left_parenthesis', 'left_bracket', 'assign', 'object_sign', 'static_object_sign', 'namespace_sigh', 'double_operator', 'operator', 'assoc_array', 'compare', 'quote_number_concat', 'assign', 'string_concat', 'comma'])) {
+                        return false; //
                         throw new compiler\exception('parse error : line '.$line.' '.$prev['org'].$current['org']);
                     } else {
 // 클로저를 허용하지 않음. 그래서 string_concat 비교 보다 우선순위가 높음
