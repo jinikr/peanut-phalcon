@@ -51,7 +51,7 @@ class Micro extends \Phalcon\Mvc\Micro
                 }
             } else {
                 echo $handler;
-                $status = '';
+                $status = $this->response;
             }
         } else {
             throw new \Exception(($name ? $name.' ' : '').str_replace([PHP_EOL, ' '], ['', ' '], print_r($handler, true)).' is not support');
@@ -206,6 +206,8 @@ class Micro extends \Phalcon\Mvc\Micro
         if (true === is_object($returnedValue)
             && $returnedValue instanceof \Phalcon\Http\ResponseInterface) {
             $returnedValue->send();
+        } elseif (true === is_string($returnedValue)) {
+            echo $returnedValue;
         }
 
         return $returnedValue;

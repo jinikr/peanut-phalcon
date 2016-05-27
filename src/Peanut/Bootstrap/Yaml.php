@@ -253,6 +253,10 @@ class Yaml
 
         foreach ($config['stages'] as $stageName => $stage) {
             foreach ($stage['services']['nginx']['environment']['vhosts'] as $vhost) {
+                if (false === isset($vhost['server_alias'])) {
+                    $vhost['server_alias'] = [];
+                }
+
                 if (true === in_array($host, array_merge([$vhost['server_name']], $vhost['server_alias']))) {
                     $env = $stageName;
                     break;
