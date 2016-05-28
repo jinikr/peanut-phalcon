@@ -4,9 +4,13 @@ namespace Peanut;
 class template
 {
     /**
-     * @var mixed
+     * @var bool|string
      */
-    public $compile_check = true;
+    public $compileCheck = true;
+    /**
+     * @var string
+     */
+    public $compileRoot = '.';
     /**
      * @var mixed
      */
@@ -20,11 +24,11 @@ class template
 
 // = [];
     /**
-     * @var mixed
+     * @var string
      */
     public $skin;
     /**
-     * @var mixed
+     * @var string
      */
     public $tplPath;
     /**
@@ -32,13 +36,18 @@ class template
      */
     public $permission = 0777;
     /**
-     * @var mixed
+     * @var bool
      */
     public $phpengine = true;
     /**
      * @var array
      */
     public $relativePath = [];
+
+    /**
+     * @var string
+     */
+    public $ext = '.php';
 
     public function __construct()
     {
@@ -136,7 +145,7 @@ class template
         $tplPath = $this->tplPath($fid);
         $cplPath = $this->cplPath($fid);
 
-        if (false === $this->compile_check) {
+        if (false === $this->compileCheck) {
             return $cplPath;
         }
 
@@ -144,21 +153,21 @@ class template
             trigger_error('cannot find defined template "'.$tplPath.'"', E_USER_ERROR);
         }
 
-        $cpl_head = '<?php /* vendor\view\template '.date('Y/m/d H:i:s', filemtime($tplPath)).' '.$tplPath.' ';
+        $cplHead = '<?php /* Peanut\Template '.date('Y/m/d H:i:s', filemtime($tplPath)).' '.$tplPath.' ';
 
-        if ('dev' !== $this->compile_check && @is_file($cplPath)) {
+        if ('dev' !== $this->compileCheck && @is_file($cplPath)) {
             $fp   = fopen($cplPath, 'rb');
-            $head = fread($fp, strlen($cpl_head) + 9);
+            $head = fread($fp, strlen($cplHead) + 9);
             fclose($fp);
 
             if (strlen($head) > 9
-                && substr($head, 0, -9) == $cpl_head && filesize($cplPath) == (int) substr($head, -9)) {
+                && substr($head, 0, -9) == $cplHead && filesize($cplPath) == (int) substr($head, -9)) {
                 return $cplPath;
             }
         }
 
         $compiler = new \Peanut\Template\Compiler();
-        $compiler->execute($this, $fid, $tplPath, $cplPath, $cpl_head);
+        $compiler->execute($this, $fid, $tplPath, $cplPath, $cplHead);
 
         return $cplPath;
     }
@@ -178,7 +187,7 @@ class template
      */
     public function cplPath($fid)
     {
-        return $this->compile_root.DIRECTORY_SEPARATOR.ltrim($this->relativePath[$fid], '/');
+        return $this->compileRoot.DIRECTORY_SEPARATOR.ltrim($this->relativePath[$fid], '/').$this->ext;
     }
 
     /**
