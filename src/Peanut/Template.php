@@ -217,8 +217,8 @@ class template
                 $addFolder .= '/'.$skinFolder.'/';
             }
 
-            $this->relativePath[$fid] = $addFolder.$path;
-            $tplPath                  = stream_resolve_include_path($addFolder.$path);
+            $this->relativePath[$fid] = $addFolder.ltrim($path, './');
+            $tplPath                  = $this->relativePath[$fid];
         } else {
             $tplPath = $path;
         }
