@@ -11,6 +11,11 @@ class template
      * @var string
      */
     public $compileRoot = '.';
+
+    /**
+     * @var string
+     */
+    public $templateRoot = '.';
     /**
      * @var mixed
      */
@@ -196,7 +201,8 @@ class template
      */
     public function tplPath($fid)
     {
-        $path = $addFolder = '';
+        $path      = '';
+        $addFolder = rtrim($this->templateRoot, '/').'/';
 
         if (true === isset($this->tpl_[$fid])) {
             $path = $this->tpl_[$fid];
@@ -208,7 +214,7 @@ class template
             $skinFolder = trim($this->skin, '/');
 
             if ($skinFolder) {
-                $addFolder = $skinFolder.'/';
+                $addFolder .= '/'.$skinFolder.'/';
             }
 
             $this->relativePath[$fid] = $addFolder.$path;
