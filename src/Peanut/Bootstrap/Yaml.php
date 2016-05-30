@@ -127,8 +127,8 @@ class Yaml
             }
         });
 
-        if (true === isset($config['stages'][$this->stageName]['database']['server'])) {
-            $dbNames = array_keys($config['stages'][$this->stageName]['database']['server']);
+        if (true === isset($config['stages'][$this->stageName]['services']['mysql']['environment']['server'])) {
+            $dbNames = array_keys($config['stages'][$this->stageName]['services']['mysql']['environment']['server']);
 
             foreach ($dbNames as $name) {
                 \Peanut\Phalcon\Pdo\Mysql::name($name)->setEventsManager($eventsManager);
@@ -221,7 +221,7 @@ class Yaml
         $stageName = $this->stageName;
         $debug     = $this->debug;
 
-        $database              = $config['stages'][$stageName]['services']['mysql'];
+        $database              = $config['stages'][$stageName]['services']['mysql']['environment'];
         $this->di['databases'] = function () use ($database, $debug) {
             if (true === isset($database) && true === is_array($database)) {
                 $databaseConfig = [];
