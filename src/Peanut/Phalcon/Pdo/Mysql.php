@@ -200,7 +200,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
                 parent::rollback();
             }
 
-            throw new TransactionException($e);
+            throw new TransactionException($e, $e->getCode());
         }
     }
 }
