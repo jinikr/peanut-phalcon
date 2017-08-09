@@ -196,7 +196,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 
             return $return;
         } catch (\Throwable $e) {
-            if (parent::getTransactionLevel()) {
+            while (parent::getTransactionLevel()) {
                 parent::rollback();
             }
 
